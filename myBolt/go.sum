@@ -1,0 +1,6 @@
+github.com/UedaTakeyuki/erapse v0.0.0-20240304133506-4d3d4e419d2e h1:ws8x77MsjkiYX92wUwyi6BaTKj0a928UK3qEWq6fu3M=
+github.com/UedaTakeyuki/erapse v0.0.0-20240304133506-4d3d4e419d2e/go.mod h1:uxd0+8YdMNo5qWcmIb7v4+0IaNMqzIKvdElciMOQPbw=
+github.com/boltdb/bolt v1.3.1 h1:JQmyP4ZBrce+ZQu0dY660FMfatumYDLun9hBCUVIkF4=
+github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
+golang.org/x/sys v0.20.0 h1:Od9JTbYCk261bKm4M/mw7AklTlFYIa0bIp9BgSm1S8Y=
+golang.org/x/sys v0.20.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
