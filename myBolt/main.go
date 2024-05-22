@@ -5,6 +5,10 @@ import (
 	"log"
 	"time"
 
+	"os"
+	"runtime"
+	"runtime/pprof"
+
 	"github.com/UedaTakeyuki/erapse"
 	"github.com/boltdb/bolt"
 )
@@ -12,6 +16,11 @@ import (
 var world = []byte("world")
 
 func main() {
+	f, _ := os.Create("mem.prof")
+	runtime.GC()
+	pprof.WriteHeapProfile(f)
+	defer f.Close()
+
 	var err error
 	var db *bolt.DB
 	{
