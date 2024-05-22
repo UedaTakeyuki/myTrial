@@ -25,7 +25,9 @@ func main() {
 	defer db.Close()
 
 	key := []byte("hello")
+	key2 := []byte("げろげろ")
 	value := []byte("Hello World!")
+	value2 := []byte("げろげろ太郎！")
 
 	// store some data
 	err = db.Update(func(tx *bolt.Tx) error {
@@ -36,10 +38,13 @@ func main() {
 			return err
 		}
 
-		err = bucket.Put(key, value)
-		if err != nil {
+		if err = bucket.Put(key, value); err != nil {
 			return err
 		}
+		if err = bucket.Put(key2, value2); err != nil {
+			return err
+		}
+
 		return nil
 	})
 
@@ -77,15 +82,24 @@ func main() {
 		log.Println(db.Info())
 	}
 
-	err = db.View(func(tx *bolt.Tx) error {
+	err = db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(world)
 		if bucket == nil {
 			return fmt.Errorf("Bucket %q not found!", world)
 		}
 
 		{
+			log.Println("Status")
 			defer erapse.ShowErapsedTIme(time.Now())
 			log.Println(bucket.Stats())
+		}
+
+		{
+			log.Println("Delete")
+			defer erapse.ShowErapsedTIme(time.Now())
+			if err := bucket.Delete(key); err != nil {
+				log.Fatal(err)
+			}
 		}
 
 		return nil
@@ -95,4 +109,48 @@ func main() {
 		log.Fatal(err)
 	}
 
+	var i = 1
+	const varvar = "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12345678" +
+		"123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12345678" +
+		"123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12345678" +
+		"123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12345678" +
+		"123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12345678" +
+		"123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12345678" +
+		"123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12345678" +
+		"123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12345678"
+
+	for {
+		var key = fmt.Sprintf("key%d", i)
+		log.Println(key)
+		if err := db.Update(func(tx *bolt.Tx) error {
+			defer erapse.ShowErapsedTIme(time.Now())
+			bucket, err := tx.CreateBucketIfNotExists(world)
+			if err != nil {
+				return err
+			}
+			if err = bucket.Put([]byte(key), []byte(varvar)); err != nil {
+				return err
+			}
+
+			return nil
+		}); err != nil {
+			log.Fatal(err)
+		}
+		if err := db.Update(func(tx *bolt.Tx) error {
+			defer erapse.ShowErapsedTIme(time.Now())
+			bucket, err := tx.CreateBucketIfNotExists(world)
+			if err != nil {
+				return err
+			}
+			if err = bucket.Delete([]byte(key)); err != nil {
+				return err
+			}
+
+			return nil
+		}); err != nil {
+			log.Fatal(err)
+		}
+		i++
+		time.Sleep(time.Second)
+	}
 }
