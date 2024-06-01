@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-//	"os"
+	"strings"
+	// "os"
 )
 
 func main() {
@@ -23,6 +24,9 @@ func main() {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 302 {
-		fmt.Println(resp.Header["Location"][0])
+		redirectURL := resp.Header["Location"][0]
+		urlArray := strings.Split(redirectURL, "/")
+		fmt.Println(urlArray[len(urlArray)-1])
+		//		fmt.Println(resp.Header["Location"][0])
 	}
 }
