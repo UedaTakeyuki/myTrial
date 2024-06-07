@@ -36,3 +36,9 @@ Hello World!
 2024/06/07 11:33:36 eraps main.main.func4: 186 μs
 2024/06/07 11:33:36 eraps main.main.func5: 333 μs
 ```
+
+- func1: Update()
+- func2: View()
+- func3:
+- func4:
+- func5:
