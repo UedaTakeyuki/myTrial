@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
-	// "os"
 )
 
 func main() {
-	targetUrl := "https://github.com/yt-dlp/yt-dlp/releases/latest"
+	targetUrl := "https://github.com/" + os.Args[1] + "/" + os.Args[2] + "/releases/latest"
+	//	targetUrl := "https://github.com/yt-dlp/yt-dlp/releases/latest"
 	c := &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
@@ -23,7 +24,10 @@ func main() {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == 302 {
+	//	fmt.Println(resp.StatusCode)
+	if resp.StatusCode == 404 {
+		fmt.Println("No release")
+	} else if resp.StatusCode == 302 {
 		redirectURL := resp.Header["Location"][0]
 		urlArray := strings.Split(redirectURL, "/")
 		fmt.Println(urlArray[len(urlArray)-1])
