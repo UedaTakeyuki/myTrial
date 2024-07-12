@@ -21,14 +21,16 @@ int main (int argc, char **argv)
         return 1;
     }
 
-//    response_headers = soup_message_get_response_headers (msg);
-//    content_type = soup_message_headers_get_content_type (response_headers);
+/*
+    response_headers = soup_message_get_response_headers (msg);
+    content_type = soup_message_headers_get_content_type (response_headers);
 
     // content_type = "image/png"
     // bytes contains the raw data that can be used elsewhere
     g_print ("Downloaded %zu bytes of type %s\n",
              g_bytes_get_size (bytes), content_type);
 
+*/
     g_bytes_unref (bytes);
     g_object_unref (msg);
     g_object_unref (session);
