@@ -4,8 +4,27 @@
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
+static int repeat_count = 0;
+gchar *reloaDScript;
+
+typedef	struct {
+	WebKitWebView *webView;
+  gchar *script;
+} OnceCbParamType;
+
 static gboolean repeat(gpointer user_data){
-  printf("repeat.\n");
+  OnceCbParamType *param = user_data;
+  printf("repeat. repeat_count: %d\n",repeat_count);
+  if (repeat_count == 20){
+    repeat_count = 0;
+    printf("reload! \n");
+    webkit_web_view_run_javascript(param->webView,
+                                   param->script,
+                                   NULL,
+                                   NULL, //web_view_javascript_finished,
+                                   NULL);
+  }
+  repeat_count++;
 /*
   for (;;) {
 //    delay(300000);
@@ -50,7 +69,28 @@ void main(int argc, char* argv[]){
   // Make sure the main window and all its contents are visible
   gtk_widget_show_all(main_window);
 
-  g_timeout_add_seconds (300, repeat, NULL);
+  // read script
+  gsize length;
+  GError *error;
+  gchar *reloadScript;
+  if (g_file_get_contents ("reload.js",
+                     &reloadScript,
+                     &length,
+                     &error)){
+//    g_warning("script: %s", relodeScript);
+  } else {
+    g_warning ("Error running javascript: %s", error->message);
+    g_error_free (error);
+  }
+
+  // make reloadParam
+  reloadScript = g_strconcat("const myOpenWeatherURL = '", url, "'\n", reloadScript, NULL);
+  OnceCbParamType reloadParam;
+  reloadParam.webView = webView;
+  reloadParam.script = reloadScript;
+  printf("reloadScript:\n%s\n",reloadParam.script);
+
+  g_timeout_add_seconds (30, repeat, &reloadParam);
 
   gtk_main();
 }
