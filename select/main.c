@@ -3,6 +3,8 @@
 #include <unistd.h> // sleep
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 static int repeat_count = 0;
 gchar *reloaDScript;
@@ -92,5 +94,42 @@ void main(int argc, char* argv[]){
 
   g_timeout_add_seconds (30, repeat, &reloadParam);
 
+  pid_t mypid = getpid();
+  printf("pid: %d\n",mypid);
+
+  {
+    GString *command_line = g_string_new ("");
+    g_string_printf (command_line, "pgrep -lP %d", mypid);
+    gchar *standard_output = NULL;
+    gboolean result;
+    GError *error = NULL;
+    gint status;
+
+    result = g_spawn_command_line_sync (
+      command_line->str, // const gchar* command_line,
+      &standard_output, // gchar** standard_output,
+      NULL, // gchar** standard_error,
+      &status, // gint* wait_status,
+      &error// GError** error
+    );
+    if (!result){ // error handling
+      g_print("err: %s\n", error->message);
+      g_print("err: %d\n", error->code);
+      g_print("status: %d\n", status);
+      g_error_free (error);
+    } else {
+      printf("standard_output: %s",standard_output);
+      gchar **lines = g_strsplit(standard_output, "\n", 0);
+      for (int i =0; i < sizeof(lines) / sizeof(gchar *); i++){
+        gchar **line = g_strsplit(lines[i], " ", 0);
+        if (g_strcmp0(g_strstrip(line[1]), "WebKitWebProces")){
+          printf("match\n");
+        } else {
+          printf("line[1]: %s", g_strstrip(line[1]));
+        }
+      }
+      printf("first %s\n", lines[0]);
+    }
+  }
   gtk_main();
 }
