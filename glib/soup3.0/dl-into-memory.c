@@ -22,7 +22,7 @@ int main (int argc, char **argv)
     }
 
     response_headers = soup_message_get_response_headers (msg);
-    content_type = soup_message_headers_get_content_type (response_headers);
+    content_type = soup_message_headers_get_content_type (response_headers, NULL);
 
     // content_type = "image/png"
     // bytes contains the raw data that can be used elsewhere
