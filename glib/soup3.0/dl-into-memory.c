@@ -6,6 +6,10 @@ int main (int argc, char **argv)
     SoupMessageHeaders *response_headers;
     const char *content_type;
     SoupMessage *msg = soup_message_new (SOUP_METHOD_GET, "https://upload.wikimedia.org/wikipedia/commons/5/5f/BBB-Bunny.png");
+
+    SoupLogger* logger = soup_logger_new(SOUP_LOGGER_LOG_BODY);
+    soup_session_add_feature(session, SOUP_SESSION_FEATURE(logger));
+
     GError *error = NULL;
     GBytes *bytes = soup_session_send_and_read (
         session,
