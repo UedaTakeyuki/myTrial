@@ -22,9 +22,11 @@ int main (int argc, char **argv)
         return 1;
     }
 
-    GFile *output_file = g_file_new_tmp ("BBB-Bunny-XXXXXX.png");
-    GOutputStream *out_stream = g_file_create (output_file,
-        G_FILE_CREATE_NONE, NULL, &error);
+    GFileIOStream* iostream;
+    GFile *output_file = g_file_new_tmp ("BBB-Bunny-XXXXXX.png", &iostream, &error);
+    GOutputStream *out_stream = g_io_stream_get_output_stream (G_IO_STREAM (iostream));
+//    GOutputStream *out_stream = g_file_create (output_file,
+//        G_FILE_CREATE_NONE, NULL, &error);
 
     if (error) {
         g_printerr ("Failed to create file \"%s\": %s\n",
@@ -38,14 +40,13 @@ int main (int argc, char **argv)
     }
 
     response_headers = soup_message_get_response_headers (msg);
-    content_type = soup_message_headers_get_content_type (response_headers);
+    content_type = soup_message_headers_get_content_type (response_headers, NULL);
     content_length = soup_message_headers_get_content_length (response_headers);
 
     // content_type = "image/png"
-    g_print ("Downloading %zu bytes of type %s to %s\n",
+    g_print ("Downloading %lli bytes of type %s to %s\n",
              content_length, content_type,
              g_file_peek_path (output_file));
-
     g_output_stream_splice (out_stream, in_stream,
         G_OUTPUT_STREAM_SPLICE_CLOSE_SOURCE | G_OUTPUT_STREAM_SPLICE_CLOSE_TARGET,
         NULL, &error);
