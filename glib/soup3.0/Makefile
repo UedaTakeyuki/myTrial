@@ -1,4 +1,4 @@
-ALL     = simple-httpd simple-proxy unix-socket-client unix-socket-server dl-into-memory streaming-data get-asynchronousl
+ALL     = get simple-httpd simple-proxy unix-socket-client unix-socket-server dl-into-memory streaming-data get-asynchronousl
 
 all: $(ALL)
 
