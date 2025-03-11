@@ -1,8 +1,8 @@
 ALL     = array \
           builder \
           generator gvariant \
-          node    parser  reader             serialize-full \
-          boxed  generator  invalid   object  path    serialize-complex  serialize-simple
+          node    parser  render             serialize-full \
+          boxed  invalid   object  path    serialize-complex  serialize-simple
 
 all: $(ALL)
 
