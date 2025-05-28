@@ -9,6 +9,7 @@ server_callback (SoupServer        *server,
                  SoupClientContext *client,
 		         gpointer           user_data){
 
+    g_message("Method: %s", msg->method);
     g_message("Content type: %s", 
               soup_message_headers_get_content_type (msg->request_headers, NULL));
     g_message("Message Body: %s", msg->request_body->data);
