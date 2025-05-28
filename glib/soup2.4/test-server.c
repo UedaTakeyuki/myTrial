@@ -9,6 +9,8 @@ server_callback (SoupServer        *server,
                  SoupClientContext *client,
 		         gpointer           user_data){
 
+    g_message("Content type: %s", 
+              soup_message_headers_get_content_type (msg->request_headers, NULL));
     g_message("Message Body: %s", msg->request_body->data);
 
     // make response.
@@ -18,7 +20,7 @@ server_callback (SoupServer        *server,
     body = g_byte_array_new ();
     body = g_byte_array_append (body, (guint8 *)string, strlen(string));
 
-    // response respound.
+    // send response.
     soup_message_set_status (msg, SOUP_STATUS_OK);
     soup_message_set_response (msg, "text/html", SOUP_MEMORY_COPY,
                                       body->data, body->len);
