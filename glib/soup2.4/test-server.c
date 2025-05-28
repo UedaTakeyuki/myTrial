@@ -9,12 +9,8 @@ server_callback (SoupServer        *server,
                  SoupClientContext *client,
 		         gpointer           user_data){
 
-    // Message Body
-    // SoupMessageBody *mbody = soup_server_message_get_request_body (msg);
-//    g_autoptr(SoupBuffer) sbuff = msg->request_body->get_chunk()
     g_message("Message Body: %s", msg->request_body->data);
 
-/*
     // make response.
     gchar *string = "hello"; // message string
     g_autoptr(GByteArray) body; // message body
@@ -23,11 +19,9 @@ server_callback (SoupServer        *server,
     body = g_byte_array_append (body, (guint8 *)string, strlen(string));
 
     // response respound.
-    soup_server_message_set_status (msg, SOUP_STATUS_OK, NULL);
-    soup_server_message_set_response (msg, "text/html", SOUP_MEMORY_COPY,
+    soup_message_set_status (msg, SOUP_STATUS_OK);
+    soup_message_set_response (msg, "text/html", SOUP_MEMORY_COPY,
                                       body->data, body->len);
-*/
-//    g_byte_array_unref (body);
 }
 
 int main (int argc, char **argv){
