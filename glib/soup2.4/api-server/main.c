@@ -9,23 +9,25 @@ server_callback (SoupServer        *server,
                  SoupClientContext *client,
 		         gpointer           user_data){
 
-    const gchar *content_type = soup_message_headers_get_content_type (msg->request_headers, NULL);
+    const gchar *content_type = soup_message_headers_get_content_type (msg->request_headers, NULL); // shouldn't free
     g_message("Method: %s", msg->method);
     g_message("Content type: %s", content_type);
 //              soup_message_headers_get_content_type (msg->request_headers, NULL));
-    g_message("Message Body: %s", msg->request_body->data);
+    g_message("Request Body: %s", msg->request_body->data);
 
-    if (g_str_equal(content_type, "application/x-www-form-urlencoded")){
-        g_message("Form-URLEncoded:");
-    } else if (g_str_equal(content_type, "application/json")){
-        g_message("JSON:");
-    } else if (g_str_equal(content_type, "multipart/form-data")) {
-        g_message("Multipart/Form-data:");
-        g_autoptr(SoupMultipart) multipart
-         = soup_multipart_new_from_message (/*SoupMessageHeaders *headers*/ msg->request_headers,
-                                 /*SoupMessageBody *body*/ msg->response_body);
-        gint multipart_length = soup_multipart_get_length(multipart);
-        g_message("Multipart length: %d", multipart_length);
+    if (content_type != NULL){
+        if (g_str_equal(content_type, "application/x-www-form-urlencoded")){
+            g_message("Form-URLEncoded:");
+        } else if (g_str_equal(content_type, "application/json")){
+            g_message("JSON:");
+        } else if (g_str_equal(content_type, "multipart/form-data")) {
+            g_message("Multipart/Form-data:");
+            g_autoptr(SoupMultipart) multipart
+            = soup_multipart_new_from_message (/*SoupMessageHeaders *headers*/ msg->request_headers,
+                                    /*SoupMessageBody *body*/ msg->response_body);
+            gint multipart_length = soup_multipart_get_length(multipart);
+            g_message("Multipart length: %d", multipart_length);
+        }
     }
 
     // make response.
