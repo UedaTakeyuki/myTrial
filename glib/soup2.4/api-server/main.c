@@ -1,4 +1,5 @@
 #include <libsoup/soup.h>
+#include "form-urlencoded.h"
 
 // refer https://gist.github.com/tetkuz/f45e9fe26e9da84509db70631b14e2da
 static void
@@ -18,6 +19,11 @@ server_callback (SoupServer        *server,
     if (content_type != NULL){
         if (g_str_equal(content_type, "application/x-www-form-urlencoded")){
             g_message("Form-URLEncoded:");
+            g_autoptr(GHashTable) form = parse_form_urlencoded(msg->request_body->data);
+            g_message("length %d",g_hash_table_size (form));
+            g_hash_table_foreach(form, hash_table_func, NULL);
+            g_message("name: %s", g_hash_table_lookup(form, "name"));
+            
         } else if (g_str_equal(content_type, "application/json")){
             g_message("JSON:");
         } else if (g_str_equal(content_type, "multipart/form-data")) {
