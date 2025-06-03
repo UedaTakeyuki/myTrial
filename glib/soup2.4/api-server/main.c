@@ -1,5 +1,6 @@
 #include <libsoup/soup.h>
 #include "form-urlencoded.h"
+#include "json.h"
 
 // refer https://gist.github.com/tetkuz/f45e9fe26e9da84509db70631b14e2da
 static void
@@ -22,6 +23,7 @@ server_callback (SoupServer        *server,
       dump_table(form);            
     } else if (g_str_equal(content_type, "application/json")){
       g_message("JSON:");
+      parse_and_dump_json(msg->request_body->data);
     } else if (g_str_equal(content_type, "multipart/form-data")) {
       g_message("Multipart/Form-data:");
       g_autoptr(SoupMultipart) multipart

@@ -3,9 +3,6 @@
 
 #include <glib.h>
 
-#define DESKTOP_MANAGER_HEIGHT 32 
-
-
 // make hash table of request body.
 GHashTable *
 parse_form_urlencoded(const gchar *request_body);
