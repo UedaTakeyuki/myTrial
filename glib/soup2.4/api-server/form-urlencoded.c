@@ -24,6 +24,7 @@ parse_form_urlencoded(const gchar *request_body){
   return form;
 }
 
+// iterator function for debug dump
 void hash_table_func (
   gpointer key,
   gpointer value,
