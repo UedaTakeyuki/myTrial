@@ -25,11 +25,25 @@ parse_form_urlencoded(const gchar *request_body){
 }
 
 // iterator function for debug dump
-void hash_table_func (
+static void hash_table_func (
   gpointer key,
   gpointer value,
   gpointer user_data
 ){
   g_message("key: %s", key);
   g_message("value: %s", value);
+}
+
+void dump_table(GHashTable *table){
+
+  // table length
+  gint length = g_hash_table_size (table);
+  g_message("length %d",length);
+
+  // pick up a value by key
+  g_autofree gchar *name = g_hash_table_lookup(table, "name");
+  g_message("name: %s", name);
+
+  // traverse all pair of key and value
+  g_hash_table_foreach(table, hash_table_func, NULL);
 }

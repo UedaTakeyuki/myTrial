@@ -10,10 +10,6 @@
 GHashTable *
 parse_form_urlencoded(const gchar *request_body);
 
-void hash_table_func (
-  gpointer key,
-  gpointer value,
-  gpointer user_data
-);
+void dump_table(GHashTable *table);
 
 #endif /* FORM_URLENCODED_H */
