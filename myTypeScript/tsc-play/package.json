@@ -1,9 +1,9 @@
 {
-  "name": "tsc-play",
-  "dependencies": {
-    "typescript": "*"
-  },
-  "scripts": {
-    "build": "tsc src/welcome.ts"
-  }
+  "name": "tsc-play",
+  "dependencies": {
+    "typescript": "*"
+  },
+  "scripts": {
+    "build": "tsc"
+  }
 }
