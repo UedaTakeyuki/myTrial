@@ -13,5 +13,9 @@
 
 <script setup>
 import {Navbar} from 'vuetify-nav3'
-  //
+const links = [
+      { icon: 'home', text: 'Home', route: '/'},
+      { icon: 'about', text: 'About', route: '/about'},
+    ]
+ //
 </script>
