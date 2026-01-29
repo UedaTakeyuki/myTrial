@@ -1,9 +1,9 @@
 <template>
   <v-app>
+    <Navbar
+      titleStr="Demo App" :links="links" qrExp=""
+    />
     <v-main>
-      <Navbar
-        titleStr="Demo App" :links="links" qrExp=""
-      />
       <RouterLink to="/">Go to Home</RouterLink>
       <RouterLink to="/about">/Go to About</RouterLink>
       <router-view />
