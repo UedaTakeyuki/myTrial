@@ -1,13 +1,9 @@
 <template>
   <v-app>
     <v-main>
-      <v-app-bar :elevation="2">
-        <template v-slot:prepend>
-          <v-app-bar-nav-icon></v-app-bar-nav-icon>
-        </template>
-
-        <v-app-bar-title>Application Bar</v-app-bar-title>
-      </v-app-bar>
+      <Navbar
+        titleStr="Demo App" :links="links" qrExp=""
+      />
       <RouterLink to="/">Go to Home</RouterLink>
       <RouterLink to="/about">/Go to About</RouterLink>
       <router-view />
@@ -16,5 +12,6 @@
 </template>
 
 <script setup>
+import {Navbar} from 'vuetify-nav3'
   //
 </script>
