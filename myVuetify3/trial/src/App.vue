@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <Navbar
-      titleStr="Demo App" :links="links" qrExp=""
+      titleStr="Demo App" :links="links" qrExp="けろけろせぶん"
     />
     <v-main>
       <RouterLink to="/">Go to Home</RouterLink>

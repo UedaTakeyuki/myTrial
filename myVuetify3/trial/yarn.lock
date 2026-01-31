@@ -2052,9 +2052,9 @@ punycode@^2.1.0:
   integrity sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==
 
 qrcode-of-this-site3@^1.0.11:
-  version "1.0.11"
-  resolved "https://registry.yarnpkg.com/qrcode-of-this-site3/-/qrcode-of-this-site3-1.0.11.tgz#619a3f398e8e18120ad488a0dca6e1be706b52a6"
-  integrity sha512-yr/UQ7BtZSCNbExLkFcyjtcQEi0n/lC0LpHXBINnmb3HcZbu24pTnpeR81UZYE30aUYIarcwzngPqcjib7sYUg==
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/qrcode-of-this-site3/-/qrcode-of-this-site3-1.0.12.tgz#8c09fbfe95781553f291045e83e71d24db2319ae"
+  integrity sha512-YM8R7SR05nd8tOCjDOOhSqfZ4cgjuD61pBUlzBt5fzuirmieb7wvvHaACapZh28bBbfy3TykOFuKBF10qC5cdQ==
   dependencies:
     "@mdi/font" "7.0.96"
     qrcode "^1.5.1"
@@ -2650,10 +2650,10 @@ vue@^3.2.38, vue@^3.2.47, vue@^3.5.21:
     "@vue/server-renderer" "3.5.27"
     "@vue/shared" "3.5.27"
 
-vuetify-nav3@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/vuetify-nav3/-/vuetify-nav3-1.0.6.tgz#d468ed460011542dbf159d46d5dd5edcec2c8301"
-  integrity sha512-Inq+QxLWf5WcXBkw9M0LVmSZEmEiWLdrR/x17gnbOD9WNiX0LR7xa+BknR0N0zdR0y8cHc3YCMd7OyIsjSKeRA==
+vuetify-nav3@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/vuetify-nav3/-/vuetify-nav3-1.0.8.tgz#dd62d361790e37218c0ccfd211957a0b92e761ac"
+  integrity sha512-Y+tiTboNZ5hXLKBG3YwcMRp3Wjp0tTYbaP07prsXcJt9CMC7Geb8/ScUxJT7ZjuI1sALaRTzQy2AZ3/Rhht3uQ==
   dependencies:
     core-js "^3.6.5"
     qrcode-of-this-site3 "^1.0.11"
