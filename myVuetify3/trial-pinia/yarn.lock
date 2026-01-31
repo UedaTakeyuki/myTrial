@@ -1114,11 +1114,6 @@ core-js-compat@^3.46.0:
   dependencies:
     browserslist "^4.28.1"
 
-core-js@^3.6.5:
-  version "3.48.0"
-  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.48.0.tgz#1f813220a47bbf0e667e3885c36cd6f0593bf14d"
-  integrity sha512-zpEHTy1fjTMZCKLHUZoVeylt9XrzaIN2rbPXEt0k+q7JE5CkCZdo6bNq55bn24a69CH7ErAVLKijxJja4fw+UQ==
-
 cross-spawn@^7.0.6:
   version "7.0.6"
   resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-7.0.6.tgz#8a58fe78f00dcd70c370451759dfbfaf03e8ee9f"
@@ -2134,7 +2129,7 @@ punycode@^2.1.0:
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.3.1.tgz#027422e2faec0b25e1549c3e1bd8309b9133b6e5"
   integrity sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==
 
-qrcode-of-this-site3@^1.0.11:
+qrcode-of-this-site3@^1.0.12:
   version "1.0.12"
   resolved "https://registry.yarnpkg.com/qrcode-of-this-site3/-/qrcode-of-this-site3-1.0.12.tgz#8c09fbfe95781553f291045e83e71d24db2319ae"
   integrity sha512-YM8R7SR05nd8tOCjDOOhSqfZ4cgjuD61pBUlzBt5fzuirmieb7wvvHaACapZh28bBbfy3TykOFuKBF10qC5cdQ==
@@ -2786,7 +2781,7 @@ vue-router@^4.5.1:
   dependencies:
     "@vue/devtools-api" "^6.6.4"
 
-vue@^3.2.38, vue@^3.2.47, vue@^3.5.21:
+vue@^3.2.38, vue@^3.2.45, vue@^3.5.21:
   version "3.5.27"
   resolved "https://registry.yarnpkg.com/vue/-/vue-3.5.27.tgz#e55fd941b614459ab2228489bc19d1692e05876c"
   integrity sha512-aJ/UtoEyFySPBGarREmN4z6qNKpbEguYHMmXSiOGk69czc+zhs0NF6tEFrY8TZKAl8N/LYAkd4JHVd5E/AsSmw==
@@ -2797,16 +2792,16 @@ vue@^3.2.38, vue@^3.2.47, vue@^3.5.21:
     "@vue/server-renderer" "3.5.27"
     "@vue/shared" "3.5.27"
 
-vuetify-nav3@^1.0.8:
-  version "1.0.8"
-  resolved "https://registry.yarnpkg.com/vuetify-nav3/-/vuetify-nav3-1.0.8.tgz#dd62d361790e37218c0ccfd211957a0b92e761ac"
-  integrity sha512-Y+tiTboNZ5hXLKBG3YwcMRp3Wjp0tTYbaP07prsXcJt9CMC7Geb8/ScUxJT7ZjuI1sALaRTzQy2AZ3/Rhht3uQ==
+vuetify-nav3@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/vuetify-nav3/-/vuetify-nav3-1.1.1.tgz#918d9a10fe629400b61d39fb302c598f60c2ad68"
+  integrity sha512-vpak12Oep6uP2yfDIZa+obBkYMaP2x/AMZO8dLUqxY0wy2BlyOwCxhAX9w5PAdVFqWJMzt0Bjx3Zm0/+8e1vuA==
   dependencies:
-    core-js "^3.6.5"
-    qrcode-of-this-site3 "^1.0.11"
-    vue "^3.2.47"
+    qrcode-of-this-site3 "^1.0.12"
+    vue "^3.2.45"
+    vuetify "^3.1.8"
 
-vuetify@^3.0.0, vuetify@^3.10.1:
+vuetify@^3.0.0, vuetify@^3.1.8, vuetify@^3.10.1:
   version "3.11.8"
   resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-3.11.8.tgz#8d7dc3615c924a8e10e42f4652002b476d5d790e"
   integrity sha512-4iKnntOnLFFklygZjzlVfcHrtLO8+iK4HOhiia6HP2U8v82x+ngaSCgm+epvPrGyCMfCpfuEttqD2qElrr1axw==
