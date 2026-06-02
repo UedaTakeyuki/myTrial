@@ -1,4 +1,5 @@
 import { fileURLToPath, URL } from 'node:url'
+import VueRouter from 'unplugin-vue-router/vite'
 import Vue from '@vitejs/plugin-vue'
 import Fonts from 'unplugin-fonts/vite'
 import { defineConfig } from 'vite'
@@ -7,6 +8,9 @@ import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    VueRouter({
+      /* options */
+    }),
     Vue({
       template: { transformAssetUrls },
     }),
@@ -47,6 +51,7 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  // added by ueda: for MacOS12
   css: {
     preprocessorOptions: {
       sass: { api: 'legacy' },
