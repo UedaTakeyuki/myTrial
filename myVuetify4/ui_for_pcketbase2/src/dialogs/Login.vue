@@ -18,4 +18,7 @@
 
 <script setup>
   import LoginDialog from '@/components/Login.vue'
+
+  // defineModel を使うことで、親の v-model と自動的に双方向同期されます
+  const isOpen = defineModel({ type: Boolean, default: false })
 </script>

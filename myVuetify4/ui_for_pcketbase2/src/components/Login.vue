@@ -32,9 +32,6 @@
   import { ref, onMounted } from 'vue'
   import PocketBase from 'pocketbase'
 
-// defineModel を使うことで、親の v-model と自動的に双方向同期されます
-  const isOpen = defineModel({ type: Boolean, default: false })
-
   const email = ref("hba01111@nifty.com")
   const pw = ref("dista226")
 
@@ -42,6 +39,7 @@
 
   const login = async ()=>{
     const pb = new PocketBase('https://pocketbase.uedasoft.com');
-    const authData = await pb.collection("users").authWithPassword(email, pw);
+    const authData = await pb.collection("users").authWithPassword(email.value, pw.value);
+    location.reload();
   }
 </script>
