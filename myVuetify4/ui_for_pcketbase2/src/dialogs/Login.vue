@@ -27,6 +27,7 @@
     />
     <v-btn
       class="ma-1"
+      @click.once="login"
     >
       Login
     </v-btn>
@@ -37,6 +38,7 @@
 
 <script setup>
   import { ref, onMounted } from 'vue'
+  import PocketBase from 'pocketbase'
 
 // defineModel を使うことで、親の v-model と自動的に双方向同期されます
   const isOpen = defineModel({ type: Boolean, default: false })
@@ -44,7 +46,8 @@
   const email = ref("kerokero@keroro.co.jp")
   const pw = ref("1234")
 
-  const login=()=>{
-    
+  const login = async ()=>{
+    const pb = new PocketBase('https://pocketbase.uedasoft.com');
+    const authData = await pb.collection("users").authWithPassword('hba01111@nifty.com', 'dista226');
   }
 </script>
