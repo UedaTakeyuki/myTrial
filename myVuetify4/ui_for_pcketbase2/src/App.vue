@@ -9,6 +9,7 @@
 
 <script lang="ts" setup>
   import { useTemplateRef, onMounted, ref } from 'vue'
+  import PocketBase from 'pocketbase'
 
   // Login Dialog
   import LoginDialog from '@/dialogs/Login.vue'
@@ -16,6 +17,9 @@
 
   // PocketBase
   onMounted(() => {
-    isLoginDialogOpen = true
+    const pb = new PocketBase('https://pocketbase.uedasoft.com');
+    if (!pb.authStore.isValid){
+      isLoginDialogOpen = true
+    }
   })
 </script>

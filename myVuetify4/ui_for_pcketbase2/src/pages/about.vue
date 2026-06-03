@@ -24,8 +24,6 @@
 <script lang="ts" setup>
   import { ref, onMounted } from 'vue'
   import PocketBase from 'pocketbase'
-  const email = ref("kerokero@keroro.co.jp")
-  const pw = ref("1234")
 
   onMounted(async () => {
     console.log(`コンポーネントがマウントされました。`)
