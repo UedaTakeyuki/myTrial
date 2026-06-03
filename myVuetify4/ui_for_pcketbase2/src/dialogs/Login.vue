@@ -4,50 +4,18 @@
   width="auto"
 >
   <v-card
-    max-width="400"
-    prepend-icon="mdi-update"
-    text="彡⌒ミ がいるぞ殺せ！"
+    prepend-icon="mdi-login"
+    subtitle="Sign In/Up"
   >
 
-    <p>email:{{email}}</p>
-    <p>pw:{{pw}}</p>
-    <v-text-field
-      class="mx-1"
-      v-model="email"
-      label="Email address"
-      placeholder="johndoe@gmail.com"
-      type="email"
-    />
-    <v-text-field
-      class="mx-1"
-      v-model="pw"
-      hint="Enter your password to access this website"
-      label="Password"
-      type="input"
-    />
-    <v-btn
-      class="ma-1"
-      @click.once="login"
-    >
-      Login
-    </v-btn>
+    <LoginDialog/>
+
+    <v-divider/>
 
   </v-card>
 </v-dialog>
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue'
-  import PocketBase from 'pocketbase'
-
-// defineModel を使うことで、親の v-model と自動的に双方向同期されます
-  const isOpen = defineModel({ type: Boolean, default: false })
-
-  const email = ref("kerokero@keroro.co.jp")
-  const pw = ref("1234")
-
-  const login = async ()=>{
-    const pb = new PocketBase('https://pocketbase.uedasoft.com');
-    const authData = await pb.collection("users").authWithPassword('hba01111@nifty.com', 'dista226');
-  }
+  import LoginDialog from '@/components/Login.vue'
 </script>
