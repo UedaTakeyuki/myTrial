@@ -10,9 +10,15 @@
       placeholder="johndoe@gmail.com"
       type="email"
     />
-
-    <PwInput v-model="pw"/>
-    
+    <v-text-field
+      class="mx-1"
+      v-model="pw"
+      hint="Enter your password to access this website"
+      label="Password"
+      :type="showPassword ? 'text' : 'password'"
+      :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+      @click:append-inner="showPassword = !showPassword" 
+    />
     <v-btn
       class="ma-1"
       @click.once="login"
@@ -25,10 +31,11 @@
 <script setup>
   import { ref, onMounted } from 'vue'
   import PocketBase from 'pocketbase'
-  import PwInput from '@/components/PwInput.vue'
 
   const email = ref("hba01111@nifty.com")
   const pw = ref("dista226")
+
+  const showPassword = ref(false)
 
   const login = async ()=>{
     const pb = new PocketBase('https://pocketbase.uedasoft.com');
