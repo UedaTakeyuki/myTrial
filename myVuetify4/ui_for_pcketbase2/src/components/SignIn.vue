@@ -11,8 +11,11 @@
       type="email"
     />
 
-    <PwInput v-model="pw"/>
-    
+    <PwInput 
+      class="ma-1"
+      v-model="pw"
+    />
+
     <v-btn
       class="ma-1"
       @click.once="login"

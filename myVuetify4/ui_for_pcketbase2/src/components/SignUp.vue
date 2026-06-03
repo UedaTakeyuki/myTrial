@@ -1,39 +1,54 @@
 <template>
   <v-card
     v-show="true"
+    title="Sign Up"
+    width="400"
   >
-    <p>Sign In</p>
-    <v-text-field
-      class="mx-1"
-      v-model="email"
-      label="Email address"
-      placeholder="johndoe@gmail.com"
-      type="email"
-    />
-    <v-text-field
-      class="mx-1"
-      v-model="pw"
-      hint="Enter your password to access this website"
-      label="Password"
-      :type="showPassword ? 'text' : 'password'"
-      :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-      @click:append-inner="showPassword = !showPassword" 
-    />
-    <v-btn
-      class="ma-1"
-      @click.once="login"
-    >
-      Login
-    </v-btn>
+    <v-card-item>
+      <v-text-field
+        v-model="name"
+        label="Name"
+        placeholder="Jane Doe"
+        type="name"
+      />
+
+      <v-text-field
+        v-model="email"
+        label="Email address"
+        placeholder="johndoe@gmail.com"
+        type="email"
+      />
+
+      <PwInput 
+        v-model="pw"
+      />
+
+      <PwInput 
+        v-model="pw2"
+        label="Password Confirm"
+        hint="Confirm password again"
+      />
+    </v-card-item>
+    <v-card-actions>
+      <v-fab
+        class="ma-1"
+        @click.once="login"
+      >
+        Login
+      </v-fab>
+    </v-card-actions>
   </v-card>
 </template>
 
 <script setup>
   import { ref, onMounted } from 'vue'
   import PocketBase from 'pocketbase'
+  import PwInput from '@/components/PwInput.vue'
 
-  const email = ref("hba01111@nifty.com")
-  const pw = ref("dista226")
+  const email = ref()
+  const pw = ref()
+  const pw2 = ref()
+  const name = ref()
 
   const showPassword = ref(false)
 

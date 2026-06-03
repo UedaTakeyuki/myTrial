@@ -1,6 +1,6 @@
 <template>
   <v-text-field
-    hint="Enter your password to access this website"
+    hint="Enter password"
     label="Password"
     :type="showPassword ? 'text' : 'password'"
     :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
