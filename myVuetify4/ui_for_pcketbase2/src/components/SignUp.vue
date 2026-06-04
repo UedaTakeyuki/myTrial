@@ -79,6 +79,11 @@
       const record = await pb.collection('users').create(data);
       
       console.log('Successfully registered:', record.id);
+
+      // login with registered email & pw
+      const authData = await pb.collection("users").authWithPassword(email.value, pw.value);
+      location.reload();
+
     } catch (err) {
       console.error('Registration failed:', err.data);
       if (err.response && err.response.data) {
