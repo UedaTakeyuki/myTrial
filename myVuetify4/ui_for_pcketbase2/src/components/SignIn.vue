@@ -39,8 +39,8 @@
   import PocketBase from 'pocketbase'
   import PwInput from '@/components/PwInput.vue'
 
-  const email = ref("hba01111@nifty.com")
-  const pw = ref("dista226")
+  const email = ref("")
+  const pw = ref("")
 
   const showIn = defineModel({ type: Boolean, default: false })
 
