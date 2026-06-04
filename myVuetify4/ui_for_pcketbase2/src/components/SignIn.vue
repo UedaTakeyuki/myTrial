@@ -16,15 +16,17 @@
       v-model="pw"
     />
 
-    <v-btn
-      class="ma-1"
-      @click.once="login"
-    >
-      Login
-    </v-btn>
+    <v-card-actions class="justify-end">
+      <v-btn @click="showIn = !showIn">Sign Up</v-btn>
+      <v-divider/>
+      <v-btn
+        class="ma-1"
+        @click.once="login"
+      >
+        Login
+      </v-btn>
+      </v-card-actions>
   </v-card>
-  <v-divider/>
-  or <v-btn @click="showIn = !showIn">Sign Up</v-btn>
 </template>
 
 <script setup>

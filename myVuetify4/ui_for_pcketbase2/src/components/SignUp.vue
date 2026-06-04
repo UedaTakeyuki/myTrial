@@ -39,6 +39,9 @@
 
     </v-card-item>
     <v-card-actions class="justify-end">
+      <v-btn @click="showIn = !showIn">Sign In</v-btn>
+      <v-separate/>
+      <v-separate/>
       <v-btn
         icon="mdi-check"
         color="primary"
@@ -47,8 +50,6 @@
       </v-btn>
     </v-card-actions>
   </v-card>
-  <v-divider/>
-  or <v-btn @click="showIn = !showIn">Sign In</v-btn>
 </template>
 
 <script setup>
