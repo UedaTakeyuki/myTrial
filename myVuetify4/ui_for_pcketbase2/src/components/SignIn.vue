@@ -1,6 +1,6 @@
 <template>
   <v-card
-    v-show="true"
+    v-show="showIn"
   >
     <p>Sign In</p>
     <v-text-field
@@ -23,6 +23,8 @@
       Login
     </v-btn>
   </v-card>
+  <v-divider/>
+  or <v-btn @click="showIn = !showIn">Sign Up</v-btn>
 </template>
 
 <script setup>
@@ -32,6 +34,8 @@
 
   const email = ref("hba01111@nifty.com")
   const pw = ref("dista226")
+
+  const showIn = defineModel({ type: Boolean, default: false })
 
   const login = async ()=>{
     const pb = new PocketBase('https://pocketbase.uedasoft.com');

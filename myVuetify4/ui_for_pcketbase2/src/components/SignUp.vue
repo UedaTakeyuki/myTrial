@@ -1,6 +1,6 @@
 <template>
   <v-card
-    v-show="true"
+    v-show="!showIn"
     title="Sign Up"
     width="331"
   >
@@ -47,6 +47,8 @@
       </v-btn>
     </v-card-actions>
   </v-card>
+  <v-divider/>
+  or <v-btn @click="showIn = !showIn">Sign In</v-btn>
 </template>
 
 <script setup>
@@ -60,6 +62,8 @@
   const pw2 = ref()
   const name = ref()
   const serversideErrors = ref({})
+
+  const showIn = defineModel({ type: Boolean, default: false })
 
   // Sign Up
   const signUpUser = async ()=>{
