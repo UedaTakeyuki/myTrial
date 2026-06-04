@@ -1,29 +1,34 @@
 <template>
   <v-card
     v-show="showIn"
+    title="Sign In"
+    width="331"
   >
-    <p>Sign In</p>
-    <v-text-field
-      class="mx-1"
-      v-model="email"
-      label="Email address"
-      placeholder="johndoe@gmail.com"
-      type="email"
-    />
+    <v-card-item>
+      <v-text-field
+        class="mx-1"
+        v-model="email"
+        label="Email address"
+        placeholder="johndoe@gmail.com"
+        type="email"
+      />
 
-    <PwInput 
-      class="ma-1"
-      v-model="pw"
-    />
+      <PwInput 
+        class="ma-1"
+        v-model="pw"
+      />
+    </v-card-item>
 
     <v-card-actions class="justify-end">
       <v-btn @click="showIn = !showIn">Sign Up</v-btn>
-      <v-divider/>
+
+      <v-spacer />
+
       <v-btn
-        class="ma-1"
+        icon="mdi-check"
+        color="primary"
         @click.once="login"
       >
-        Login
       </v-btn>
       </v-card-actions>
   </v-card>

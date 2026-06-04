@@ -38,10 +38,11 @@
       <p v-if="serversideErrors.message" style="color: red;">{{ serversideErrors.message }}</p>
 
     </v-card-item>
-    <v-card-actions class="justify-end">
+    <v-card-actions>
       <v-btn @click="showIn = !showIn">Sign In</v-btn>
-      <v-separate/>
-      <v-separate/>
+
+      <v-spacer />
+      
       <v-btn
         icon="mdi-check"
         color="primary"
