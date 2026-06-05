@@ -1,65 +1,93 @@
 <template>
-  <v-card
-    v-show="!showIn"
-    title="Sign Up"
-    width="331"
-  >
-    <v-card-item>
-      <!-- 一般的なエラー（システムエラーなど）の表示 -->
-      <v-alert
-        v-if="serversideErrors.message"
-        type="error"
-        variant="tonal"
-        class="mb-4"
-        density="compact"
+  <!-- 外側の v-card や v-show を削除し、ダイアログの内包コンテンツとして最適化 -->
+  <div class="w-100">
+    
+    <!-- 一般的なエラー（システムエラーなど）の表示 -->
+    <v-alert
+      v-if="serversideErrors.message"
+      type="error"
+      variant="tonal"
+      class="mb-6 rounded-lg"
+      density="comfortable"
+    >
+      {{ serversideErrors.message }}
+    </v-alert>
+
+    <!-- 1. 入力フィールド：variantをsolo-filledにし、高さを抑えてスタイリッシュに -->
+    <v-text-field
+      v-model="name"
+      label="Name"
+      placeholder="Jane Doe"
+      variant="solo-filled"
+      flat
+      density="comfortable"
+      prepend-inner-icon="mdi-account-outline"
+      class="mb-2"
+    />
+
+    <v-text-field
+      v-model="email"
+      label="Email address"
+      placeholder="johndoe@gmail.com"
+      type="email"
+      variant="solo-filled"
+      flat
+      density="comfortable"
+      prepend-inner-icon="mdi-email-outline"
+      :error-messages="serversideErrors.data?.email?.message"
+      class="mb-2"
+    />
+
+    <!-- PwInput側にも型崩れ防止のため variant="solo-filled" flat density="comfortable" を渡すとさらに綺麗になります -->
+    <PwInput 
+      v-model="pw"
+      variant="solo-filled"
+      flat
+      density="comfortable"
+      :rules="passwordRules"
+      :error-messages="serversideErrors.data?.password?.message"
+      class="mb-2"
+    />
+
+    <PwInput 
+      v-model="pw2"
+      label="Password Confirm"
+      hint="Confirm password"
+      variant="solo-filled"
+      flat
+      density="comfortable"
+      :rules="[matchRule]"
+      :error-messages="serversideErrors.data?.passwordConfirm?.message"
+      class="mb-6"
+    />
+
+    <!-- 2. ボタン配置：メインボタンを大きく下部に配置し、切り替えは下に控えめに配置 -->
+    <v-btn
+      color="primary"
+      block
+      flat
+      height="48"
+      class="rounded-xl font-weight-bold text-none mb-4"
+      :loading="loading"
+      :disabled="loading"
+      @click="signUpUser"
+    >
+      Create Account
+    </v-btn>
+
+    <div class="text-center">
+      <span class="text-body-2 text-medium-emphasis">Already have an account? </span>
+      <v-btn 
+        variant="text" 
+        color="primary" 
+        class="text-none font-weight-bold px-1" 
+        density="comfortable"
+        @click="showIn = true"
       >
-        {{ serversideErrors.message }}
-      </v-alert>
-
-      <v-text-field
-        v-model="name"
-        label="Name"
-        placeholder="Jane Doe"
-      />
-
-      <v-text-field
-        v-model="email"
-        label="Email address"
-        placeholder="johndoe@gmail.com"
-        type="email"
-        :error-messages="serversideErrors.data?.email?.message"
-      />
-
-      <PwInput 
-        v-model="pw"
-        :rules=passwordRules
-        :error-messages="serversideErrors.data?.password?.message"
-      />
-
-      <PwInput 
-        v-model="pw2"
-        label="Password Confirm"
-        hint="Confirm password"
-        :rules="[matchRule]"
-        :error-messages="serversideErrors.data?.passwordConfirm?.message"
-      />
-    </v-card-item>
-
-    <v-card-actions>
-      <v-btn @click="showIn = !showIn">Sign In</v-btn>
-
-      <v-spacer />
-      
-      <v-btn
-        icon="mdi-check"
-        color="primary"
-        :loading="loading"
-        :disabled="loading"
-        @click="signUpUser"
-      >
+        Sign In
       </v-btn>
-    </v-card-actions>
-  </v-card>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -67,23 +95,20 @@
   import PocketBase from 'pocketbase'
   import PwInput from '@/components/PwInput.vue'
 
-  // 親コンポーネントへのイベント定義
   const emit = defineEmits(['success'])
-
   const pb = new PocketBase('https://pocketbase.uedasoft.com');
 
-  // two-way bindings
   const email = ref('')
   const pw = ref('')
   const pw2 = ref('')
   const name = ref('')
   const serversideErrors = ref({})
-  const loading = ref(false) // 連打防止用のローディング状態
+  const loading = ref(false)
 
+  // 親から渡された表示切り替えフラグを受け取る
   const showIn = defineModel({ type: Boolean, default: false })
 
-  // Sign Up
-  const signUpUser = async ()=>{
+  const signUpUser = async () => {
     if (loading.value) return
 
     loading.value = true
@@ -97,16 +122,11 @@
     };
 
     try {
-      // 'users' is the default auth collection in PocketBase
       const record = await pb.collection('users').create(data);
       console.log('Successfully registered:', record.id);
 
-      // login with registered email & pw
       const authData = await pb.collection("users").authWithPassword(email.value, pw.value);
-
-      // 親コンポーネントにログインデータを添えて通知
       emit('success', authData);
-
     } catch (err) {
       console.error('Registration failed:', err);
       if (err.response && err.response.data) {
@@ -119,13 +139,10 @@
     }
   }
 
-  // Rule: general pw rules
   const passwordRules = [
     v => !!v || 'Cannot be blank.',
     v => (v && v.length >= 8) || 'Must be at least 8 character(s).',
   ]
 
-  // Rule: value of pw2 should match with pw
   const matchRule = (value) => (value == pw.value) || 'password not match.'
-
 </script>

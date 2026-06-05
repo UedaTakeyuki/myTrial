@@ -1,63 +1,109 @@
 <template>
-  <v-card
-    v-show="showIn"
-    title="Sign In"
-    width="331"
-  >
-    <v-card-item>
-      <v-text-field
-        class="mx-1"
-        v-model="email"
-        label="Email address"
-        placeholder="johndoe@gmail.com"
-        type="email"
-      />
+  <div class="w-100">
+    
+    <!-- 一般的なエラー（パスワード間違いなど）の表示 -->
+    <v-alert
+      v-if="serversideErrors.message"
+      type="error"
+      variant="tonal"
+      class="mb-6 rounded-lg"
+      density="comfortable"
+    >
+      {{ serversideErrors.message }}
+    </v-alert>
 
-      <PwInput 
-        class="ma-1"
-        v-model="pw"
-      />
-    </v-card-item>
+    <!-- 【復活】1. メールアドレス入力欄 -->
+    <v-text-field
+      class="mx-1 mb-2"
+      v-model="email"
+      label="Email address"
+      variant="solo-filled"
+      flat
+      density="comfortable"
+      placeholder="johndoe@gmail.com"
+      type="email"
+      prepend-inner-icon="mdi-email-outline"
+    />
 
-    <v-card-actions class="justify-end" px-4 pb-4>
-      <v-btn @click="showIn = !showIn" variant="text" size="x-small">
-        or Sign Up?
-      </v-btn>
+    <!-- 2. パスワード入力欄 -->
+    <PwInput 
+      v-model="pw"
+      label="Password"
+      variant="solo-filled"
+      flat
+      density="comfortable"
+      :error-messages="serversideErrors.data?.password?.message"
+      class="mb-6"
+    />
 
-      <v-spacer />
+    <!-- 3. ログインボタン -->
+    <v-btn
+      color="primary"
+      block
+      flat
+      height="48"
+      class="rounded-xl font-weight-bold text-none mb-4"
+      :loading="loading"
+      :disabled="loading"
+      @click="signInUser"
+    >
+      Sign In
+    </v-btn>
 
-      <v-btn
-        color="primary"
-        variant="elevated"
-        append-icon="mdi-send"
-        @click="login"
+    <!-- 4. アカウント作成画面への切り替えリンク -->
+    <div class="text-center">
+      <span class="text-body-2 text-medium-emphasis">Don't have an account? </span>
+      <v-btn 
+        variant="text" 
+        color="primary" 
+        class="text-none font-weight-bold px-1" 
+        density="comfortable"
+        @click="showIn = false"
       >
-    Login
-  </v-btn>
-    </v-card-actions>
-  </v-card>
+        Sign Up
+      </v-btn>
+    </div>
+  </div>
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref } from 'vue'
   import PocketBase from 'pocketbase'
   import PwInput from '@/components/PwInput.vue'
 
-  const email = ref("")
-  const pw = ref("")
+  const emit = defineEmits(['success'])
+  const pb = new PocketBase('https://uedasoft.com');
 
-  const showIn = defineModel({ type: Boolean, default: false })
+  const email = ref('')
+  const pw = ref('')
+  const serversideErrors = ref({})
+  const loading = ref(false)
 
-  const login = async ()=>{
-    const pb = new PocketBase('https://pocketbase.uedasoft.com');
+  // 親から渡された表示切り替えフラグ
+  const showIn = defineModel({ type: Boolean, default: true })
+
+  // Sign In 処理
+  const signInUser = async () => {
+    if (loading.value) return
+
+    loading.value = true
+    serversideErrors.value = {}
+
     try {
+      // PocketBaseでのログイン処理（email または username で認証）
       const authData = await pb.collection("users").authWithPassword(email.value, pw.value);
-      location.reload();
-    } catch (error) {
-      // エラーハンドリング
-      console.error("Login failed:", error)
-      console.log(error)
-      alert("ログインに失敗しました。メールアドレスまたはパスワードを確認してください。")
+      console.log('Successfully signed in:', authData.record.id);
+
+      emit('success', authData);
+    } catch (err) {
+      console.error('Sign in failed:', err);
+      if (err.response && err.response.data) {
+        serversideErrors.value = err.response;
+      } else {
+        serversideErrors.value = { message: err.message || 'メールアドレスまたはパスワードが正しくありません。', data: {} };
+      }
+    } finally {
+      loading.value = false
     }
   }
 </script>
