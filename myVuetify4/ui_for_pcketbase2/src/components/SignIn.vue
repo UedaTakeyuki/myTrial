@@ -19,18 +19,22 @@
       />
     </v-card-item>
 
-    <v-card-actions class="justify-end">
-      <v-btn @click="showIn = !showIn">Sign Up</v-btn>
+    <v-card-actions class="justify-end" px-4 pb-4>
+      <v-btn @click="showIn = !showIn" variant="text" size="x-small">
+        or Sign Up?
+      </v-btn>
 
       <v-spacer />
 
       <v-btn
-        icon="mdi-check"
         color="primary"
-        @click.once="login"
+        variant="elevated"
+        append-icon="mdi-send"
+        @click="login"
       >
-      </v-btn>
-      </v-card-actions>
+    Login
+  </v-btn>
+    </v-card-actions>
   </v-card>
 </template>
 
@@ -46,7 +50,14 @@
 
   const login = async ()=>{
     const pb = new PocketBase('https://pocketbase.uedasoft.com');
-    const authData = await pb.collection("users").authWithPassword(email.value, pw.value);
-    location.reload();
+    try {
+      const authData = await pb.collection("users").authWithPassword(email.value, pw.value);
+      location.reload();
+    } catch (error) {
+      // エラーハンドリング
+      console.error("Login failed:", error)
+      console.log(error)
+      alert("ログインに失敗しました。メールアドレスまたはパスワードを確認してください。")
+    }
   }
 </script>

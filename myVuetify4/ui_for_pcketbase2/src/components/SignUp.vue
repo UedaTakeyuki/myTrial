@@ -5,11 +5,21 @@
     width="331"
   >
     <v-card-item>
+      <!-- 一般的なエラー（システムエラーなど）の表示 -->
+      <v-alert
+        v-if="serversideErrors.message"
+        type="error"
+        variant="tonal"
+        class="mb-4"
+        density="compact"
+      >
+        {{ serversideErrors.message }}
+      </v-alert>
+
       <v-text-field
         v-model="name"
         label="Name"
         placeholder="Jane Doe"
-        type="name"
       />
 
       <v-text-field
@@ -17,27 +27,24 @@
         label="Email address"
         placeholder="johndoe@gmail.com"
         type="email"
+        :error-messages="serversideErrors.data?.email?.message"
       />
-      <span v-if="serversideErrors.email">{{ serversideErrors.email.message }}</span>
 
       <PwInput 
         v-model="pw"
         :rules=passwordRules
+        :error-messages="serversideErrors.data?.password?.message"
       />
-      <span v-if="serversideErrors.password">{{ serversideErrors.password.message }}</span>
 
       <PwInput 
         v-model="pw2"
         label="Password Confirm"
         hint="Confirm password"
         :rules="[matchRule]"
+        :error-messages="serversideErrors.data?.passwordConfirm?.message"
       />
-      <span v-if="serversideErrors.passwordConfirm">{{ serversideErrors.passwordConfirm.message }}</span>
-      
-      <!-- 一般的なエラー（システムエラーなど）の表示 -->
-      <p v-if="serversideErrors.message" style="color: red;">{{ serversideErrors.message }}</p>
-
     </v-card-item>
+
     <v-card-actions>
       <v-btn @click="showIn = !showIn">Sign In</v-btn>
 
@@ -46,7 +53,9 @@
       <v-btn
         icon="mdi-check"
         color="primary"
-        @click.once="signUpUser"
+        :loading="loading"
+        :disabled="loading"
+        @click="signUpUser"
       >
       </v-btn>
     </v-card-actions>
@@ -54,25 +63,29 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref } from 'vue'
   import PocketBase from 'pocketbase'
   import PwInput from '@/components/PwInput.vue'
 
+  const pb = new PocketBase('https://pocketbase.uedasoft.com');
+
   // two-way bindings
-  const email = ref()
-  const pw = ref()
-  const pw2 = ref()
-  const name = ref()
+  const email = ref('')
+  const pw = ref('')
+  const pw2 = ref('')
+  const name = ref('')
   const serversideErrors = ref({})
+  const loading = ref(false) // 連打防止用のローディング状態
 
   const showIn = defineModel({ type: Boolean, default: false })
 
   // Sign Up
   const signUpUser = async ()=>{
-    // registered
+    if (loading.value) return
+
+    loading.value = true
     serversideErrors.value = {}
 
-    const pb = new PocketBase('https://pocketbase.uedasoft.com');
     const data = {
       "email": email.value,
       "password": pw.value,
@@ -83,20 +96,22 @@
     try {
       // 'users' is the default auth collection in PocketBase
       const record = await pb.collection('users').create(data);
-      
       console.log('Successfully registered:', record.id);
 
       // login with registered email & pw
-      const authData = await pb.collection("users").authWithPassword(email.value, pw.value);
+      authData = await pb.collection("users").authWithPassword(email.value, pw.value);
+       // TODO: ハードリロードではなく、状態管理の更新やルーティング遷移を推奨
       location.reload();
 
     } catch (err) {
       console.error('Registration failed:', err.data);
       if (err.response && err.response.data) {
-        serversideErrors.value = err.response.data;
+        serversideErrors.value = err.response;
       } else {
-        serversideErrors.value = { message: '予期せぬエラーが発生しました。' };
+        serversideErrors.value = { message: err.message || '予期せぬエラーが発生しました。', data: {} };
       }
+    } finally {
+      loading.value = false
     }
   }
 
