@@ -19,7 +19,7 @@
   onMounted(() => {
     const pb = new PocketBase('https://pocketbase.uedasoft.com');
     if (!pb.authStore.isValid){
-      isLoginDialogOpen = true
+      isLoginDialogOpen.value = true
     }
   })
 </script>

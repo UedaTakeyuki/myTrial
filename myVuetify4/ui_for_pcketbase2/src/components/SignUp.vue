@@ -67,6 +67,9 @@
   import PocketBase from 'pocketbase'
   import PwInput from '@/components/PwInput.vue'
 
+  // 親コンポーネントへのイベント定義
+  const emit = defineEmits(['success'])
+
   const pb = new PocketBase('https://pocketbase.uedasoft.com');
 
   // two-way bindings
@@ -99,12 +102,13 @@
       console.log('Successfully registered:', record.id);
 
       // login with registered email & pw
-      authData = await pb.collection("users").authWithPassword(email.value, pw.value);
-       // TODO: ハードリロードではなく、状態管理の更新やルーティング遷移を推奨
-      location.reload();
+      const authData = await pb.collection("users").authWithPassword(email.value, pw.value);
+
+      // 親コンポーネントにログインデータを添えて通知
+      emit('success', authData);
 
     } catch (err) {
-      console.error('Registration failed:', err.data);
+      console.error('Registration failed:', err);
       if (err.response && err.response.data) {
         serversideErrors.value = err.response;
       } else {
