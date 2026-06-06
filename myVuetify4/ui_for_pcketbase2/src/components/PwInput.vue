@@ -6,8 +6,6 @@
   -->
   <v-text-field
     v-bind="$attrs"
-    hint="Enter password"
-    label="Password"
     :type="showPassword ? 'text' : 'password'"
     prepend-inner-icon="mdi-lock-outline"
     :append-inner-icon="showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"

@@ -41,6 +41,8 @@
     <!-- PwInput側にも型崩れ防止のため variant="solo-filled" flat density="comfortable" を渡すとさらに綺麗になります -->
     <PwInput 
       v-model="pw"
+      hint="Enter password"
+      label="Password"
       variant="solo-filled"
       flat
       density="comfortable"
