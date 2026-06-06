@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
+    "dev-global": "vite --host=$(ipconfig getifaddr en1)",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
