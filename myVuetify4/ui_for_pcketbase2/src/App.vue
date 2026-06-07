@@ -7,6 +7,8 @@
       <LoginDialog v-model="isLoginDialogOpen"/>
       <router-view />
     </v-main>
+
+    <Footer />
   </v-app>
 </template>
 
@@ -20,6 +22,7 @@
 
   // Navbar
   import Navbar from '@/components/Navbar.vue'
+  import Footer from '@/components/Footer.vue'
 
   // Menu
   const links = [
