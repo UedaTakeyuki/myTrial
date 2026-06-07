@@ -1,8 +1,8 @@
 <template>
-  <!-- Google Fonts から美しい筆記体「Great Vibes」を読み込む -->
-  <link rel="preconnect" href="https://googleapis.com">
-  <link rel="preconnect" href="https://gstatic.com" crossorigin>
-  <link href="https://googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+  <!-- Google Fonts から美しい筆記体「Parisienne」を読み込む -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Parisienne&display=swap" rel="stylesheet">
   
   <!-- アプリケーションバー -->
   <v-app-bar elevation="0" class="border-b">
@@ -85,7 +85,7 @@ const drawer = ref(true)
   ロゴのように見せるため、少し大きめのサイズ（2rem）に調整しています。
 */
 .script-font {
-  font-family: 'Great Vibes', cursive !important;
+  font-family: 'Parisienne', cursive !important;
   font-size: 2rem !important;
   letter-spacing: 1px !important;
 }
