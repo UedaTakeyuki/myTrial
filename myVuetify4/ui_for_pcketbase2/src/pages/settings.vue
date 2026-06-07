@@ -1,0 +1,3 @@
+<template>
+けーろよーん  
+</template>
