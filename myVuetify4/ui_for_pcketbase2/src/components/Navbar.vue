@@ -24,7 +24,11 @@
     border="0"
   >
     <v-list nav class="pa-3">
-      
+      <QRcode>
+        <template v-slot:title>
+          Scan to get this site.
+        </template>
+      </QRcode>
       <!-- 修正ポイント2：メニューは読みやすい普通のフォント（日本語）に戻しました -->
       <v-list-item 
         prepend-icon="mdi-home-variant-outline" 
@@ -49,6 +53,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import {QRcode} from 'qrcode-of-this-site3'
 
 // ドロワーの開閉状態を管理するリアクティブな変数（初期値は true で開いた状態）
 const drawer = ref(true)
