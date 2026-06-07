@@ -1,5 +1,8 @@
 <template>
   <v-app>
+
+    <Navbar/>
+
     <v-main>
       <LoginDialog v-model="isLoginDialogOpen"/>
       <router-view />
@@ -14,6 +17,16 @@
   // Login Dialog
   import LoginDialog from '@/dialogs/Login.vue'
   let isLoginDialogOpen = ref(false)
+
+  // Navbar
+  import Navbar from '@/components/Navbar.vue'
+
+  // Menu
+  const links = [
+    { icon: 'home', text: 'Home', route: '/'},
+    { icon: 'face', text: 'Account', route: '/account'},
+    { icon: 'shop', text: 'Purchase', route: '/purchase'},
+  ];
 
   // PocketBase
   onMounted(() => {
