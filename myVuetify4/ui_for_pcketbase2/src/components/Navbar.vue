@@ -86,7 +86,7 @@ const drawer = ref(true)
 */
 .script-font {
   font-family: 'Parisienne', cursive !important;
-  font-size: 2rem !important;
+  font-size: 1.3rem !important;
   letter-spacing: 1px !important;
 }
 </style>
