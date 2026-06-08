@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full max-w-md mx-auto">
+  <form @submit.prevent="signInUser" class="w-full max-w-md mx-auto">
     
     <!-- 一般的なエラーの表示 (v-alert の代替) -->
     <Alert
@@ -21,6 +21,7 @@
           type="email"
           placeholder="johndoe@gmail.com"
           class="pl-9"
+          autocomplete="username"
         />
       </div>
     </div>
@@ -44,10 +45,10 @@
 
     <!-- 3. ログインボタン (v-btn の代替) -->
     <Button
+      type="submit"
       variant="default"
       class="w-full h-12 rounded-xl font-bold text-base mb-3"
       :disabled="loading"
-      @click="signInUser"
     >
       <!-- ローディング時のインジケーター (LucideのLoader2を回転) -->
       <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
@@ -57,7 +58,9 @@
     <!-- 4. アカウント作成画面への切り替えリンク -->
     <div class="text-center text-sm text-muted-foreground">
       <span>Don't have an account? </span>
-      <Button 
+      <!-- 変更点: type="button" を明記（form 内のボタンが誤って submit されるのを防ぐため） -->
+      <Button
+        type="button"
         variant="link" 
         class="p-0 h-auto font-bold text-primary hover:no-underline" 
         @click="showIn = false"
@@ -65,7 +68,7 @@
         Sign Up
       </Button>
     </div>
-  </div>
+  </form>
 </template>
 
 <script setup>
