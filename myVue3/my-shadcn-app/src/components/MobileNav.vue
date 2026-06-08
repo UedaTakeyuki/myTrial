@@ -18,6 +18,11 @@
             <div class="h-5 w-5 rounded bg-gradient-to-tr from-violet-600 to-indigo-500"></div>
             Vue<span class="text-primary">App</span>
           </SheetTitle>
+          <QRcode class="mb-2">
+            <template v-slot:title>
+              Scan to get this site.
+            </template>
+          </QRcode>
         </SheetHeader>
         
         <div class="flex flex-col gap-3 font-medium text-base mt-4">
@@ -58,6 +63,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { QRcode } from 'qrcode-of-this-site3'
 import { useRoute, RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'

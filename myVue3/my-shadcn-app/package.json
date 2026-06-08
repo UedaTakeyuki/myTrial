@@ -15,6 +15,7 @@
     "clsx": "^2.1.1",
     "lucide-vue-next": "^1.0.0",
     "pocketbase": "^0.27.0",
+    "qrcode-of-this-site3": "^1.0.12",
     "reka-ui": "^2.9.9",
     "tailwind-merge": "^3.6.0",
     "vue": "^3.5.13",
