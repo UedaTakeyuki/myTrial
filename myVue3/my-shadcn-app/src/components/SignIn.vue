@@ -33,6 +33,7 @@
         id="password"
         v-model="pw"
         placeholder="••••••••"
+        autocomplete="current-password" 
       />
       <!-- サーバーサイドのバリデーションエラー表示 -->
       <p 
