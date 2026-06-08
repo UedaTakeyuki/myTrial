@@ -4,6 +4,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@custom-variant dark (&:is(.dark *));
+
 /* 💡 ここを修正：htmlに.darkクラスがついた場合も正常に判定されるようにします */
 /* @custom-variant dark (&:is(.dark *)); */
 @variant dark (&:where(.dark, .dark *));

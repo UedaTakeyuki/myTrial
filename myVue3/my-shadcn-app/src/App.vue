@@ -8,6 +8,7 @@
 
     <!-- 💡 flex-1 を追加して、コンテンツが少ない時もフッターを下に押し下げます -->
     <main class="container mx-auto px-6 py-12 max-w-screen-xl flex-1">
+      <LoginDialog v-model="isLoginDialogOpen"/>
       <RouterView />
     </main>
     
@@ -18,6 +19,20 @@
 </template>
 
 <script setup>
+import {onMounted, ref } from 'vue'
+import PocketBase from 'pocketbase'
 import AppBar from '@/components/AppBar.vue'
 import Footer from '@/components/Footer.vue' // 💡 インポートを追加
+
+// Login Dialog
+import LoginDialog from '@/dialogs/Login.vue'
+let isLoginDialogOpen = ref(false)
+
+// PocketBase
+onMounted(() => {
+  const pb = new PocketBase('https://pocketbase.uedasoft.com');
+  if (!pb.authStore.isValid){
+    isLoginDialogOpen.value = true
+  }
+})
 </script>
