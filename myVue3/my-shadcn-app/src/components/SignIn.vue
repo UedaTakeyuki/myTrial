@@ -81,7 +81,7 @@
   import { Mail, Loader2 } from 'lucide-vue-next'
 
   const emit = defineEmits(['success'])
-  const pb = new PocketBase('https://uedasoft.com');
+  const pb = new PocketBase('https://pocketbase.uedasoft.com');
 
   const email = ref('')
   const pw = ref('')

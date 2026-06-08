@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref } from 'vue'
+import {onMounted, ref, provide} from 'vue'
 import PocketBase from 'pocketbase'
 import AppBar from '@/components/AppBar.vue'
 import Footer from '@/components/Footer.vue' // 💡 インポートを追加
@@ -28,11 +28,17 @@ import Footer from '@/components/Footer.vue' // 💡 インポートを追加
 import LoginDialog from '@/dialogs/Login.vue'
 let isLoginDialogOpen = ref(false)
 
+// 💡 追加：ダイアログを開く関数を作成し、子コンポーネントへ provide する
+const openLoginDialog = () => {
+  isLoginDialogOpen.value = true
+}
+provide('openLoginDialog', openLoginDialog)
+
 // PocketBase
 onMounted(() => {
   const pb = new PocketBase('https://pocketbase.uedasoft.com');
   if (!pb.authStore.isValid){
-    isLoginDialogOpen.value = true
+    openLoginDialog() // 作成した関数を使う形に統一
   }
 })
 </script>
