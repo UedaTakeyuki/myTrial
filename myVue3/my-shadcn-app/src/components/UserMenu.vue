@@ -67,8 +67,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import PocketBase from 'pocketbase'
-
-const pb = new PocketBase('https://pocketbase.uedasoft.com');
+import pb from '@/lib/pocketbase' 
+//const pb = new PocketBase('https://pocketbase.uedasoft.com');
 
 // 1. 最初は現在の状態をセット
 

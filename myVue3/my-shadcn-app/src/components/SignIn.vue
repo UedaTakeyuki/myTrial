@@ -70,7 +70,6 @@
 
 <script setup>
   import { ref } from 'vue'
-  import PocketBase from 'pocketbase'
   import PwInput from '@/components/PwInput.vue'
   
   // shadcn-vue と Lucide アイコンのインポート
@@ -80,8 +79,10 @@
   import { Button } from '@/components/ui/button'
   import { Mail, Loader2 } from 'lucide-vue-next'
 
+  import pb from '@/lib/pocketbase'
+
   const emit = defineEmits(['success'])
-  const pb = new PocketBase('https://pocketbase.uedasoft.com');
+  //const pb = new PocketBase('https://pocketbase.uedasoft.com');
 
   const email = ref('')
   const pw = ref('')
@@ -105,7 +106,9 @@
 
       emit('success', authData);
     } catch (err) {
-      console.error('Sign in failed:', err);
+      console.error("ログインエラー詳細:", err);
+      console.log("isAbort (自動キャンセルか):", err.isAbort); // trueなら自動キャンセルが原因
+      console.log("元のエラー:", err.originalError); // 通信エラーなどの詳細
       if (err.response && err.response.data) {
         serversideErrors.value = err.response;
       } else {

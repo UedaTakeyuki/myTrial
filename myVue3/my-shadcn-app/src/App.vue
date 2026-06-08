@@ -19,14 +19,15 @@
 </template>
 
 <script setup>
-import {onMounted, ref, provide} from 'vue'
-import PocketBase from 'pocketbase'
+import {onMounted, onUnmounted, ref, provide} from 'vue'
+import pb from '@/lib/pocketbase'
 import AppBar from '@/components/AppBar.vue'
 import Footer from '@/components/Footer.vue' // 💡 インポートを追加
-
-// Login Dialog
 import LoginDialog from '@/dialogs/Login.vue'
+
 let isLoginDialogOpen = ref(false)
+// const pb = new PocketBase('https://pocketbase.uedasoft.com');
+
 
 // 💡 追加：ダイアログを開く関数を作成し、子コンポーネントへ provide する
 const openLoginDialog = () => {
@@ -34,11 +35,29 @@ const openLoginDialog = () => {
 }
 provide('openLoginDialog', openLoginDialog)
 
+// 💡 状態変化を監視するための解除用関数を保持する変数
+let unsubscribe = null
+
 // PocketBase
 onMounted(() => {
-  const pb = new PocketBase('https://pocketbase.uedasoft.com');
+  // 1. 初期表示時のチェック：未ログインならダイアログを開く
   if (!pb.authStore.isValid){
-    openLoginDialog() // 作成した関数を使う形に統一
+    openLoginDialog()
+  }
+
+  // 2. 🌟 ログイン状態のリアルタイム監視を開始
+  unsubscribe = pb.authStore.onChange((token, model) => {
+    // ログインに成功（isValid が true になった）したら、ダイアログを自動で閉じる
+    if (pb.authStore.isValid) {
+      isLoginDialogOpen.value = false
+    }
+  })
+})
+
+// 💡 コンポーネント破棄時に監視を解除（念のためのメモリリーク対策）
+onUnmounted(() => {
+  if (unsubscribe) {
+    unsubscribe()
   }
 })
 </script>

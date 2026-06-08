@@ -117,8 +117,10 @@
   import { Button } from '@/components/ui/button'
   import { User, Mail, Loader2 } from 'lucide-vue-next'
 
+  import pb from '@/lib/pocketbase'
+
   const emit = defineEmits(['success'])
-  const pb = new PocketBase('https://pocketbase.uedasoft.com');
+//  const pb = new PocketBase('https://pocketbase.uedasoft.com');
 
   const email = ref('')
   const pw = ref('')
