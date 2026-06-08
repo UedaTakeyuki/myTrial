@@ -3,8 +3,10 @@
   <Sheet v-model:open="isOpen">
     <SheetTrigger as-child>
       <!-- 💡 修正：hover:bg-zinc-900 から hover:bg-accent に変更 -->
-      <Button variant="ghost" size="icon" class="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent block md:hidden rounded-lg">
-        <Menu class="h-5 w-5" />
+      <!--<Button variant="ghost" size="icon" class="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent block md:hidden rounded-lg">-->
+      <!-- 💡 block を inline-flex に変更しました -->
+      <Button variant="ghost" size="icon" class="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent inline-flex md:hidden rounded-lg">
+      <Menu class="h-5 w-5" />
         <span class="sr-only">Toggle Menu</span>
       </Button>
     </SheetTrigger>
