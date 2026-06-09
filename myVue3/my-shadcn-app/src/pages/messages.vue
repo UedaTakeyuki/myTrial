@@ -8,7 +8,10 @@
     </div>
 
     <!-- 💬 メッセージ一覧エリア -->
-    <div class="flex-1 overflow-y-auto p-4 space-y-4 pb-8 flex flex-col">
+    <div
+      ref="scrollContainer"
+      class="flex-1 overflow-y-auto p-4 space-y-4 pb-8 flex flex-col"
+    >
       <Card v-if="records.length === 0" class="p-6 text-center text-muted-foreground my-auto">
         メッセージはありません
       </Card>
@@ -41,31 +44,60 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, nextTick } from 'vue'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
-// 切り出したモジュールをインポート
 import MessageItem from '@/components/MessageItem.vue'
 import { useMessages } from '@/lib/useMessages'
 
 const newMessage = ref('')
-const { records, avatarUrls, isSending, currentUserId, fetchMessages, sendMessage } = useMessages()
+// 👇 要素を参照するための ref を定義
+const scrollContainer = ref(null)
+
+const { 
+  records, 
+  avatarUrls, 
+  isSending, 
+  currentUserId, 
+  fetchMessages, 
+  subscribeMessages, // 👈 追加
+  sendMessage // 👈 これが抜けていないか確認してください！
+} = useMessages()
+
+// ⭕ メッセージエリア内だけでスクロールさせるヘルパーに変更
+const scrollToBottom = async () => {
+  await nextTick()
+  if (scrollContainer.value) {
+    scrollContainer.value.scrollTo({
+      top: scrollContainer.value.scrollHeight,
+      behavior: 'smooth'
+    })
+  }
+}
 
 const handleSend = async () => {
   const success = await sendMessage(newMessage.value)
   if (success) {
     newMessage.value = ''
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+    // 💡 自分の送信時も subscribe 経由で描画されるため、ここでのスクロールは不要（または即時やりたい場合のみ残す）
   }
 }
 
 onMounted(async () => {
   try {
+    // 1. 過去ログを取得
     await fetchMessages()
+    await scrollToBottom()
+
+    // 2. リアルタイム同期を開始（新着メッセージが来たらスクロール）
+    await subscribeMessages(() => {
+      scrollToBottom()
+    })
   } catch (error) {
-    console.error("データ取得失敗:", error)
+    console.error("初期化失敗:", error)
   }
 })
 </script>
+
