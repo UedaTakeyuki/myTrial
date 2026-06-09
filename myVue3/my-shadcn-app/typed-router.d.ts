@@ -30,9 +30,23 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/data': RouteRecordInfo<
+      '/data',
+      '/data',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/logout': RouteRecordInfo<
       '/logout',
       '/logout',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/messages': RouteRecordInfo<
+      '/messages',
+      '/messages',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -63,9 +77,21 @@ declare module 'vue-router/auto-routes' {
       views:
         | never
     }
+    'src/pages/data.vue': {
+      routes:
+        | '/data'
+      views:
+        | never
+    }
     'src/pages/logout.vue': {
       routes:
         | '/logout'
+      views:
+        | never
+    }
+    'src/pages/messages.vue': {
+      routes:
+        | '/messages'
       views:
         | never
     }
