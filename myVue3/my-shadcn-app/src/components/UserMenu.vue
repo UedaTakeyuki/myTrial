@@ -6,8 +6,9 @@
       <Button variant="ghost" class="relative h-8 w-8 rounded-full border border-border p-0 hover:opacity-80">
         <Avatar class="h-8 w-8">
           <!-- 💡 おまけ：GitHubの画像を正しく表示するためにダミーURLからアバター用URLに変更するか、プレースホルダーに任せます -->
-          <AvatarImage src="https://github.com" alt="@shadcn" />
-          <!-- 💡 修正：bg-zinc-800 text-zinc-200 から bg-muted text-muted-foreground に変更 -->
+          <!-- 💡 修正前: <AvatarImage src="https://github.com" alt="@shadcn" /> -->
+          <!-- 👇 修正後: 計算したアバターURLをバインドし、altにはユーザー名を指定 -->
+          <AvatarImage :src="avatarUrl" :alt="name" />          <!-- 💡 修正：bg-zinc-800 text-zinc-200 から bg-muted text-muted-foreground に変更 -->
           <AvatarFallback class="bg-muted text-muted-foreground text-xs">CN</AvatarFallback>
         </Avatar>
       </Button>
@@ -55,7 +56,7 @@
 
 
 <script setup>
-import { ref, inject, onUnmounted } from 'vue'
+import { ref, inject, onUnmounted, computed } from 'vue' // 💡 computed を追加
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -66,48 +67,45 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import PocketBase from 'pocketbase'
 import pb from '@/lib/pocketbase' 
-//const pb = new PocketBase('https://pocketbase.uedasoft.com');
 
-// 1. 最初は現在の状態をセット
+// 💡 ログイン状態やユーザー情報を一つのリアクティブなオブジェクトとして管理するとスッキリします
+const currentUser = ref(pb.authStore.model)
+const isLoggedIn = ref(pb.authStore.isValid)
 
-// 💡 ログイン状態を管理する ref（true または false）
-const isLoggedIn = ref(pb.authStore.isValid);
-const user = pb.authStore.model;
-const name = ref(user?.name || "Not logged in");
-const email = ref(user?.email || "");
+// 💡 ユーザー名とメールアドレスは computed（算出プロパティ）にすると、連動して自動更新されます
+const name = computed(() => currentUser.value?.name || currentUser.value?.username || "Not logged in")
+const email = computed(() => currentUser.value?.email || "")
 
-// 🌟 ここがポイント：PocketBase の認証状態をリアルタイム監視！
-// ログイン・ログアウトが走ると、この関数が自動で実行されます
+// 🌟 アバター画像URLの生成（PocketBaseのファイル取得URLの規則に合わせる）
+const avatarUrl = computed(() => {
+  if (!currentUser.value || !currentUser.value.avatar) return ""
+  // PocketBaseの仕様: /api/files/コレクション名/レコードID/ファイル名
+  return `${pb.baseUrl}/api/files/${currentUser.value.collectionId}/${currentUser.value.id}/${currentUser.value.avatar}`
+})
+
+// 🌟 PocketBase の認証状態をリアルタイム監視
 const unsubscribe = pb.authStore.onChange((token, model) => {
-  isLoggedIn.value = pb.authStore.isValid;
-  name.value = model?.name || "Not logged in";
-  email.value = model?.email || "";
-});
+  isLoggedIn.value = pb.authStore.isValid
+  currentUser.value = model // ユーザー情報を丸ごと更新
+})
 
 // コンポーネントが消えるときに監視を解除（メモリリーク防止）
 onUnmounted(() => {
-  unsubscribe();
-});
+  unsubscribe()
+})
 
-// 💡 追加：App.vue から提供された関数を inject する
+// 💡 App.vue から提供された関数を inject する
 const openLoginDialog = inject('openLoginDialog')
 
 const logout = () => {
-  pb.authStore.clear(); // 👈 これを実行すると、上の onChange が自動で動いて画面が変わります！
-/*
-  pb.authStore.clear(); // PocketBaseの認証情報を削除
-  isLoggedIn.value = false;  // ログイン状態を false に
-  name.value = "Not logged In"
-  email.value = ""
-*/
+  pb.authStore.clear() // これで onChange が走り、画面が未ログイン状態になります
 }
 
-// 💡 修正：受け取った関数を実行してダイアログを開く
 const login = () => {
   if (openLoginDialog) {
     openLoginDialog()
   }
 }
 </script>
+

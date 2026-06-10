@@ -1,4 +1,4 @@
-<!-- views/ChatView.vue (または元のファイル名) -->
+<!-- views/messages.vue -->
 <template>
   <div class="flex flex-col h-screen max-w-md mx-auto bg-background relative overflow-hidden">
     
@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, nextTick } from 'vue'
+import { onMounted, onUnmounted, ref, nextTick } from 'vue'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -63,6 +63,7 @@ const {
   currentUserId, 
   fetchMessages, 
   subscribeMessages, // 👈 追加
+  unsubscribeMessages, // 👈 もし useMessages に実装されていれば追加
   sendMessage // 👈 これが抜けていないか確認してください！
 } = useMessages()
 
@@ -85,18 +86,56 @@ const handleSend = async () => {
   }
 }
 
+// 💡 音声オブジェクトを生成（public直下のファイルを指定）
+const audio = new Audio('/dragon-studio-new-notification-3-398649.mp3')
+audio.volume = 0.5 // 音量を50%に明示的に設定
+
 onMounted(async () => {
   try {
     // 1. 過去ログを取得
     await fetchMessages()
     await scrollToBottom()
 
-    // 2. リアルタイム同期を開始（新着メッセージが来たらスクロール）
-    await subscribeMessages(() => {
+    // 2. リアルタイム同期を開始（新着メッセージが来たら音を鳴らしてスクロール）
+    await subscribeMessages(async() => {
+      // 💡 データの描画更新が終わるのを一瞬待つ
+      await nextTick()
+
+      console.log("【検証】新着イベントを検知！現在の全レコード数:", records.value?.length)
+
+      if (records.value && records.value.length > 0) {
+        // 配列の最後（一番新しいメッセージ）を取得
+        const lastMessage = records.value[records.value.length - 1]
+        
+        // currentUserId が ref かどうかで値の取り方を変える安全策
+        const myId = currentUserId?.value !== undefined ? currentUserId.value : currentUserId
+        
+        console.log("【検証】最新の送信者ID:", lastMessage.user_from, " / 自分のID:", myId)
+
+        // 💡 相手からのメッセージ、または IDがまだ上手く取れなくても「新着があれば鳴らす」安全処理
+        if (!myId || lastMessage.user_from !== myId) {
+          console.log("【成功】音を鳴らします")
+          audio.currentTime = 0
+          audio.play().catch(err => console.error("再生ブロック:", err))
+        } else {
+          console.log("【スルー】自分が送信したメッセージのため消音します")
+        }
+      }
+      
+      // 新着メッセージが来たらスクロール
       scrollToBottom()
     })
   } catch (error) {
     console.error("初期化失敗:", error)
+  }
+})
+
+// 💡 画面を離れる時にリアルタイム接続を解除する
+onUnmounted(() => {
+  if (typeof unsubscribeMessages === 'function') {
+    unsubscribeMessages()
+  } else {
+    // または直接 pb.collection('messages').unsubscribe() を呼ぶ
   }
 })
 </script>
