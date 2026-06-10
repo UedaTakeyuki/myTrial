@@ -35,7 +35,7 @@ import { onMounted, ref, nextTick } from 'vue'
 import { Card } from '@/components/ui/card'
 import MessageItem from '@/components/MessageItem.vue'
 import MessageForm from '@/components/MessageForm.vue' // 💡 追加
-import { useMessages } from '@/lib/useMessages'
+import { useMessages } from '@/composable/useMessages'
 
 const scrollContainer = ref(null)
 const { 
