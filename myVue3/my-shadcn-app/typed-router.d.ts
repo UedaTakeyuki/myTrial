@@ -44,6 +44,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/message/[uid]': RouteRecordInfo<
+      '/message/[uid]',
+      '/message/:uid',
+      { uid: ParamValue<true> },
+      { uid: ParamValue<false> },
+      | never
+    >,
     '/messages': RouteRecordInfo<
       '/messages',
       '/messages',
@@ -93,6 +100,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/logout.vue': {
       routes:
         | '/logout'
+      views:
+        | never
+    }
+    'src/pages/message/[uid].vue': {
+      routes:
+        | '/message/[uid]'
       views:
         | never
     }

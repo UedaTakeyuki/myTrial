@@ -48,7 +48,7 @@ const {
   sendMessage
 } = useMessages()
 
-const audio = new Audio(`${window.location.origin}/dragon-studio-new-notification-3-398649.mp3`)
+const audio = new Audio('/dragon-studio-new-notification-3-398649.mp3')
 audio.volume = 0.5
 
 const scrollToBottom = async () => {
@@ -93,7 +93,12 @@ onMounted(async () => {
         
         if (!myId || lastMessage.user_from !== myId) {
           audio.currentTime = 0
-          audio.play().catch(err => console.log("音声再生ブロック:", err))
+
+          // 💡 ユーザーがまだ画面を一度もクリックしていない場合のエラーを静かに処理する
+          audio.play().catch(err => {
+            console.log("【UX案内】ユーザーが画面を操作するまで音声を再生できません。")
+            console.log("【Firefox自動再生制限】ユーザーがチャットを操作した後に音が鳴るようになります。")
+          })
         }
       }
       scrollToBottom()
