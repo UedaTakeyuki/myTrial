@@ -56,8 +56,8 @@
 
 <script setup>
   import { ref } from 'vue'
-  import SignInDlg from '@/components/SignIn.vue'
-  import SignUpDlg from '@/components/SignUp.vue'
+  import SignInDlg from '@/components/login/SignIn.vue'
+  import SignUpDlg from '@/components/login/SignUp.vue'
   
   import {
     Dialog,

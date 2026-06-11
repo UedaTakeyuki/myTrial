@@ -2,8 +2,8 @@
 import { onMounted, ref, nextTick } from 'vue'
 import { useRoute } from 'vue-router/auto' 
 import { Card } from '@/components/ui/card'
-import MessageItem from '@/components/MessageItem.vue'
-import MessageForm from '@/components/MessageForm.vue'
+import MessageItem from '@/components/message/MessageItem.vue'
+import MessageForm from '@/components/message/MessageForm.vue'
 import { useMessages } from '@/composable/useMessages'
 import pb from '@/lib/pocketbase'
 

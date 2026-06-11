@@ -2,7 +2,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router/auto'
-import { useInvites } from '@/composable/useInvites' // 💡 追加
+import { useInvites } from '@/composable/message/useInvites' // 💡 追加
 
 const router = useRouter()
 const inputCode = ref('')

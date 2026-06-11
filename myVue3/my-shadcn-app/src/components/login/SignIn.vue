@@ -74,7 +74,7 @@
 
 <script setup>
   import { ref } from 'vue'
-  import PwInput from '@/components/PwInput.vue'
+  import PwInput from '@/components/login/PwInput.vue'
   
   // shadcn-vue と Lucide アイコンのインポート
   import { Alert, AlertDescription } from '@/components/ui/alert'

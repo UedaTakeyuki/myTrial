@@ -21,8 +21,8 @@
 <script setup>
 import {onMounted, onUnmounted, ref, provide} from 'vue'
 import pb from '@/lib/pocketbase'
-import AppBar from '@/components/AppBar.vue'
-import Footer from '@/components/Footer.vue' // 💡 インポートを追加
+import AppBar from '@/components/app/appbar/AppBar.vue'
+import Footer from '@/components/app/Footer.vue' // 💡 インポートを追加
 import LoginDialog from '@/dialogs/Login.vue'
 
 let isLoginDialogOpen = ref(false)

@@ -61,8 +61,8 @@ import { Button } from '@/components/ui/button'
 import { Search, Bell, Sun, Moon } from 'lucide-vue-next'
 import { useDark, useToggle } from '@vueuse/core'
 
-import MobileNav from './MobileNav.vue'
-import DesktopNav from './DesktopNav.vue'
+import MobileNav from '../../app/appbar/MobileNav.vue'
+import DesktopNav from '../../app/appbar/DesktopNav.vue'
 import UserMenu from './UserMenu.vue'
 
 const isDark = useDark({
