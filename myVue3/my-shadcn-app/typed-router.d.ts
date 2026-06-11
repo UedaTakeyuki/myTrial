@@ -51,6 +51,13 @@ declare module 'vue-router/auto-routes' {
       { uid: ParamValue<false> },
       | never
     >,
+    '/message/users': RouteRecordInfo<
+      '/message/users',
+      '/message/users',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/messages': RouteRecordInfo<
       '/messages',
       '/messages',
@@ -106,6 +113,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/message/[uid].vue': {
       routes:
         | '/message/[uid]'
+      views:
+        | never
+    }
+    'src/pages/message/users.vue': {
+      routes:
+        | '/message/users'
       views:
         | never
     }

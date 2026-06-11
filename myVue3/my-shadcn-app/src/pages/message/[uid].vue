@@ -53,8 +53,22 @@ const handleSend = async ({ text, file }) => {
 onMounted(async () => {
   console.log("【[uid].vue 初期化】チャット相手のID:", targetId)
   console.log("【[uid].vue 初期化】自分のID:", currentUserId)
+  
+
 
   try {
+    // 💡 追加: 相手との承認関係が 'accepted' かをチェックする
+    const isFriend = await pb.collection('friends').getFirstListItem(
+      `(user_from="${currentUserId}" && user_to="${targetId}" && status="accepted") || (user_from="${targetId}" && user_to="${currentUserId}" && status="accepted")`
+    ).catch(() => null)
+
+    // 💡 message/[uid].vue 内のガード処理
+    if (!isFriend) {
+      alert("このユーザーとはまだチャットの承認が完了していません。")
+      router.push('/message/users') // 👈 '/users' から '/message/users' に修正
+      return
+    }
+
     // 相手のユーザー情報を直接取得してヘッダーに表示
     if (targetId) {
       const user = await pb.collection('users').getOne(targetId).catch(() => null)
