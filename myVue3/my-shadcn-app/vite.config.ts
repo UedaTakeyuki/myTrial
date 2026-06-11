@@ -21,6 +21,8 @@ export default defineConfig({
     // 2. MarkdownをVueコンポーネントに変換
     Markdown({
       frontmatter: true,
+      // ★ ここを追加します！自動生成されるコンポーネント全体がこのクラスで囲まれます。
+      wrapperClasses: 'prose dark:prose-invert max-w-none', 
       // ★ markdownItSetup でプラグインを「use」するだけのシンプルな記述に変更
       async markdownItSetup(md) {
         md.use(await Shiki({
