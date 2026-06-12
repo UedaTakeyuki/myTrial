@@ -4,7 +4,8 @@
     <!-- 💡 修正：ライト・ダーク双方で綺麗に見えるよう、dark:修飾子を使ってインディゴの色味を切り替えます -->
     <span class="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/5 dark:bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 backdrop-blur-md">
       <span class="h-1.5 w-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-pulse"></span>
-      Home Page
+       <!-- 💡 $t ではなく、scriptから取り出した t を使います -->
+       {{ t('profile.title') }}
     </span>
 
     <h1 class="text-4xl font-black tracking-tight sm:text-6xl text-foreground leading-none">
@@ -19,3 +20,27 @@
     </p>
   </div>
 </template>
+
+<!-- 💡 script setup を追加し、useI18n を宣言します -->
+<script setup>
+import { useI18n } from 'vue-i18n'
+
+// useI18n を実行することで、下の <i18n> ブロックの翻訳がこのコンポーネントに注入されます
+const { t } = useI18n()
+</script>
+
+<i18n locale="ja">
+{
+  "profile": {
+    "title": "ホームページ"
+  }
+}
+</i18n>
+
+<i18n locale="en">
+{
+  "profile": {
+    "title": "Home Page"
+  }
+}
+</i18n>

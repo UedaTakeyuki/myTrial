@@ -6,7 +6,9 @@ import Markdown from 'vite-plugin-vue-markdown'
 import matter from 'gray-matter' // ★インポートを追加
 // ★公式の markdown-it 用プラグインをインポート
 import Shiki from '@shikijs/markdown-it'
+import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import { defineConfig } from 'vite'
+import path from "path" // ← これを追加！
 
 export default defineConfig({
   plugins: [
@@ -34,7 +36,11 @@ export default defineConfig({
     vue({
       include: [/\.vue$/, /\.md$/],
     }),
-    tailwindcss()
+    tailwindcss(),
+    VueI18nPlugin({
+      // 共通翻訳ファイルのパスを指定（これより下のjsonをコンパイル可能に）
+      include: [path.resolve(__dirname, './src/locales/**')],
+    })
   ],
   resolve: {
     alias: {
