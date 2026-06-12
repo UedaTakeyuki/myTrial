@@ -14,7 +14,7 @@ export default defineConfig({
       extensions: ['.vue', '.md'],
       routesFolder: [
         { src: 'src/pages', path: '' },       // 通常の画面用（URL: / ）
-        { src: 'src/md', path: 'md/' } // Markdown用（URL: /md/xxx ）
+//        { src: 'src/md', path: 'md/' } // Markdown用（URL: /md/xxx ）
       ],
       dts: false, // ★TSを使わないので型定義の自動生成をオフにします
     }),
@@ -29,7 +29,8 @@ export default defineConfig({
           theme: 'github-dark' // お好みのテーマ（dracula, nord 等）
         }))
       }
-    }),    // 3. vueプラグインで両方を処理
+    }),
+    // 3. vueプラグインで両方を処理
     vue({
       include: [/\.vue$/, /\.md$/],
     }),
