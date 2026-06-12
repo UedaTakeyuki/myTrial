@@ -88,18 +88,14 @@ import { ref, computed, onMounted } from 'vue'
 
 const posts = ref([])
 const selectedTag = ref('All')
-const globalToc = ref([]) // ★全ファイルを連結した総合目次データ
 
 onMounted(async () => {
   const files = import.meta.glob('../md/**/*.md')
-  // ★見出し抽出用に生のテキストも裏側で非同期取得できるように準備
   const rawFiles = import.meta.glob('../md/**/*.md', { query: '?raw' })
   
   const postsArray = []
-  const tocArray = []
 
   for (const path in files) {
-    // 1. 高速にコンパイル済みのモジュールを取得
     const mod = await files[path]()
     if (!mod) continue
 
@@ -112,17 +108,17 @@ onMounted(async () => {
       date = new Date(date).toISOString().split('T')[0]
     }
 
-    postsArray.push({ path: urlPath, title, date, tags })
-
-    // 2. ★総合目次（ツリー）の構築
-    // まず「記事のタイトル」自体を最上位（depth: 1）のメニューとして追加
-    tocArray.push({
+    // 💡 各記事オブジェクトに、あらかじめその記事内の見出しリスト（toc）を持たせるようにします
+    const articleToc = []
+    
+    // 1. まず記事自身のタイトルを depth: 1 として追加
+    articleToc.push({
       path: urlPath,
       text: title,
       depth: 1
     })
 
-    // 3. 各ファイルの中身を非同期でサッと開いて中の見出しを抽出
+    // 2. 記事内の ## や ### を抽出して追加
     if (rawFiles[path]) {
       const rawMod = await rawFiles[path]()
       const content = rawMod.default || ''
@@ -133,13 +129,9 @@ onMounted(async () => {
         if (match) {
           const depth = match[1] === '##' ? 2 : 3
           const text = match[2].trim()
-          
-          // 詳細ページの特定の章へ直接飛べるようにアンカー付きURLにする
-          // (例: /md/hello#章のタイトル)
-          // ※ 日本語の見出しは自動でエンコードされるか、ID生成ルールに合わせます
           const anchor = text.toLowerCase().replace(/\s+/g, '-')
           
-          tocArray.push({
+          articleToc.push({
             path: `${urlPath}#${anchor}`,
             text,
             depth
@@ -147,16 +139,16 @@ onMounted(async () => {
         }
       })
     }
+
+    // 記事データに toc を含めて配列にプッシュ
+    postsArray.push({ path: urlPath, title, date, tags, toc: articleToc })
   }
 
-  // 右側の記事一覧は日付が新しい順
+  // 右側の記事一覧を日付が新しい順にソートして格納
   posts.value = postsArray.sort((a, b) => new Date(b.date) - new Date(a.date))
-  
-  // 左側の総合メニューは、記事の一覧順に綺麗に並ぶように格納
-  globalToc.value = tocArray
 })
 
-// タグ集計・絞り込み（既存のまま）
+// タグ集計
 const allTags = computed(() => {
   const tagsSet = new Set(['All'])
   posts.value.forEach(post => {
@@ -167,8 +159,21 @@ const allTags = computed(() => {
   return Array.from(tagsSet)
 })
 
+// 💡 1. 選択されたタグに一致する記事一覧（日付順にソート済み）
 const filteredPosts = computed(() => {
   if (selectedTag.value === 'All') return posts.value
   return posts.value.filter(post => post.tags.includes(selectedTag.value))
+})
+
+// 💡 2. 絞り込まれた記事一覧から、見出しリスト（TOC）をリアルタイムに自動生成する
+const globalToc = computed(() => {
+  const tocList = []
+  // 絞り込み済みの記事をループして、それぞれの見出しを1本の配列に連結する
+  filteredPosts.value.forEach(post => {
+    if (post.toc) {
+      tocList.push(...post.toc)
+    }
+  })
+  return tocList
 })
 </script>
