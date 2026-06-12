@@ -6,15 +6,23 @@ export function useDocs() {
   const selectedTag = ref('All')
 
   onMounted(async () => {
-    const files = import.meta.glob('../md/**/*.md')
-    const rawFiles = import.meta.glob('../md/**/*.md', { query: '?raw' })
+    // 1. 両方とも `@/` に統一します
+    const files = import.meta.glob('@/md/**/*.md')
+    const rawFiles = import.meta.glob('@/md/**/*.md', { query: '?raw' })
     const postsArray = []
 
     for (const path in files) {
       const mod = await files[path]()
       if (!mod) continue
 
-      const urlPath = path.replace('../md', '/md').replace('.md', '').replace('/index', '')
+      // 2. パスの置換元を、globに合わせた文字列に変更します
+      // Viteのエイリアス glob は通常 "/src/md/..." というキーになります
+      const urlPath = path
+        .replace('/src/md', '/md') // キーが /src/md の場合
+        .replace('@/md', '/md')    // 環境によってキーが @/md になる場合への備え
+        .replace('.md', '')
+        .replace('/index', '')
+
       const title = mod.title || mod.frontmatter?.title || mod.default?.title || '無題'
       let date = mod.date || mod.frontmatter?.date || mod.default?.date || ''
       const tags = mod.tags || mod.frontmatter?.tags || mod.default?.tags || []

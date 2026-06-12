@@ -18,7 +18,7 @@
 <script setup>
 import DocsSidebar from '@/components/DocsSidebar.vue'
 import DocsMain from '@/components/DocsMain.vue'
-import { useDocs } from '@/composables/useDocs.js'
+import { useDocs } from '@/composables/docs/useDocs.js'
 
 const { selectedTag, allTags, filteredPosts, globalToc } = useDocs()
 </script>
