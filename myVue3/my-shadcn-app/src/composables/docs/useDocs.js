@@ -1,27 +1,46 @@
-// src/composables/useDocs.ts (または .js)
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n' // ★内部でインポート
 
-export function useDocs() {
+export function useDocs() { // ★引数は不要
+  const { locale } = useI18n() // ★内部でロケールを取得
+  
   const posts = ref([])
   const selectedTag = ref('All')
 
-  onMounted(async () => {
-    // 1. 両方とも `@/` に統一します
+  const loadPosts = async () => {
     const files = import.meta.glob('@/md/**/*.md')
     const rawFiles = import.meta.glob('@/md/**/*.md', { query: '?raw' })
     const postsArray = []
 
+    // ロケール名（例: "ja-JP" や "ja"）から先頭の2文字（"ja"）を抽出
+    const langCode = locale.value.split('-')[0].toLowerCase()
+
     for (const path in files) {
+      // 選択中の言語フォルダのみに絞り込み
+      const localePathSnippet = `/md/${langCode}/`
+      if (!path.includes(localePathSnippet)) {
+        continue
+      }
+
       const mod = await files[path]()
       if (!mod) continue
 
-      // 2. パスの置換元を、globに合わせた文字列に変更します
-      // Viteのエイリアス glob は通常 "/src/md/..." というキーになります
-      const urlPath = path
-        .replace('/src/md', '/md') // キーが /src/md の場合
-        .replace('@/md', '/md')    // 環境によってキーが @/md になる場合への備え
-        .replace('.md', '')
-        .replace('/index', '')
+      // パスから言語とファイル名を取り出す
+      const matchPath = path.match(/(?:\/src\/md|\/md)\/([^/]+)\/(.+)\.md$/)
+      let urlPath = ''
+
+      if (matchPath) {
+        const lang = matchPath[1]
+        let id = matchPath[2]
+        if (id === 'index') id = ''
+        urlPath = `/${lang}/md/${id}`
+      } else {
+        urlPath = path
+          .replace('/src/md', '/md')
+          .replace('@/md', '/md')
+          .replace('.md', '')
+          .replace('/index', '')
+      }
 
       const title = mod.title || mod.frontmatter?.title || mod.default?.title || '無題'
       let date = mod.date || mod.frontmatter?.date || mod.default?.date || ''
@@ -57,7 +76,16 @@ export function useDocs() {
       postsArray.push({ path: urlPath, title, date, tags, toc: articleToc })
     }
 
-    posts.value = postsArray.sort((a, b) => new Date(b.date) - new Date(a.date))
+    posts.value = postsArray.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  }
+
+  onMounted(() => {
+    loadPosts()
+  })
+
+  // ★ 内部の locale をそのまま監視
+  watch(() => locale.value, () => {
+    loadPosts()
   })
 
   const allTags = computed(() => {
