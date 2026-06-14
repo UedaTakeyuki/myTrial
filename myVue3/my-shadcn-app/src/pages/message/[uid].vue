@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router/auto'
 import { Card } from '@/components/ui/card'
 import MessageItem from '@/components/message/MessageItem.vue'
 import MessageForm from '@/components/message/MessageForm.vue'
-import { useMessages } from '@/composables/useMessages'
+import { useMessages } from '@/composables/message/useMessages'
 import pb from '@/lib/pocketbase'
 
 const route = useRoute('/message/[uid]')
