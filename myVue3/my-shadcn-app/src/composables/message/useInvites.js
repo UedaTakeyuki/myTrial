@@ -92,11 +92,29 @@ export function useInvites() {
       }
 
       // チャットを即時成立させる
-      await pb.collection('friends').create({
+      const friendRecord = await pb.collection('friends').create({
         user_from: targetUserId,
         user_to: currentUser.id,
         status: 'accepted'
       })
+
+      // 🔥【追加】コード発行者（targetUserId）に向けて通知レコードを作成する
+      // 🔥 修正：通知作成を完全に独立した try-catch で囲み、絶対に全体のエラーにしない
+      try {
+        await pb.collection('notifications').create({
+          user_to: targetUserId,                     // 通知を受け取る人（コードを発行した人）
+          user_from: currentUser.id,                 // 通知を送った人（今コードを入力した自分）
+          type: 'friend_request',                   // 汎用タイプ名
+          title: 'チャットが成立しました！',
+          text: `${currentUser.email || '新しい友達'} さんがあなたの招待コードを登録しました。`,
+          is_read: false,
+          link_url: `/messages`,                    // 遷移先（チャット一覧画面など）
+          source_id: friendRecord.id                // 関連する friends レコードの ID
+        })
+      } catch (notificationError){
+        // 万が一、PocketBaseのAPIルールなどで通知作成が失敗しても、コンソールにログを出すだけでスルーする
+        console.warn("⚠️ 通知の作成のみ失敗しました（APIルール等を確認してください）:", notificationError)
+      }
 
       // 使用済みのコードを削除
       await pb.collection('invites').delete(inviteRecord.id)

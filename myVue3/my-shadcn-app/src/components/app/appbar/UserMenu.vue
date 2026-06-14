@@ -3,13 +3,18 @@
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
       <!-- 💡 修正：border-zinc-800 から border-border に変更 -->
-      <Button variant="ghost" class="relative h-8 w-8 rounded-full border border-border p-0 hover:opacity-80">
-        <Avatar class="h-8 w-8">
+      <!-- classに「hover:bg-muted」を追加して、ホバー時だけ背景が出るようにします -->
+      <Button variant="ghost" class="relative h-8 w-8 rounded-full p-0 hover:bg-muted transition-colors">
+        <!-- 💡 修正：Avatarの背景を透過（bg-transparent）にします -->
+        <Avatar class="h-8 w-8 bg-transparent flex items-center justify-cente">
           <!-- 💡 おまけ：GitHubの画像を正しく表示するためにダミーURLからアバター用URLに変更するか、プレースホルダーに任せます -->
           <!-- 💡 修正前: <AvatarImage src="https://github.com" alt="@shadcn" /> -->
           <!-- 👇 修正後: 計算したアバターURLをバインドし、altにはユーザー名を指定 -->
           <AvatarImage :src="avatarUrl" :alt="name" />          <!-- 💡 修正：bg-zinc-800 text-zinc-200 から bg-muted text-muted-foreground に変更 -->
-          <AvatarFallback class="bg-muted text-muted-foreground text-xs">CN</AvatarFallback>
+          <!-- 💡 修正：bg-muted を bg-transparent に変更し、アイコンの色（text-foreground）を合わせます -->
+          <AvatarFallback class="bg-transparent text-muted-foreground w-full h-full flex items-center justify-center">
+            <User class="w-4 h-4" />
+          </AvatarFallback>
         </Avatar>
       </Button>
     </DropdownMenuTrigger>
@@ -59,6 +64,7 @@
 import { ref, inject, onUnmounted, computed } from 'vue' // 💡 computed を追加
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { User } from '@lucide/vue'
 import {
   DropdownMenu,
   DropdownMenuContent,

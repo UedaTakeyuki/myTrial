@@ -35,10 +35,8 @@
         </Button>
         -->
 
-        <!-- 💡 修正：ホバー時の背景と文字色をセマンティックカラーに変更 -->
-        <Button variant="ghost" size="icon" class="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent hover:text-accent-foreground rounded-lg">
-          <Bell class="h-4 w-4" />
-        </Button>
+        <!-- 💡 修正：鐘アイコンのコードをごっそり消して、切り出したコンポーネントを置くだけ！ -->
+        <NotificationBell />
 
         <!-- 💡 修正：区切り線の背景色を bg-border に変更 -->
         <div class="h-4 w-[1px] bg-border mx-1"></div>
@@ -62,4 +60,5 @@ import UserMenu from './UserMenu.vue'
 
 import LanguageSelector from './LanguageSelector.vue'
 import DarkModeToggle from './DarkModeToggle.vue'
+import NotificationBell from './NotificationBell.vue';
 </script>
