@@ -16,7 +16,7 @@
     
     <!-- 💡 修正：text-zinc-400 から text-muted-foreground に変更 -->
     <p class="text-muted-foreground text-lg max-w-[600px] font-normal leading-relaxed">
-      Shadcn Vue とファイルベースルーティングを搭載した、最高にモダンな環境です。
+      {{ t('inline.description') }}
     </p>
   </div>
 </template>
@@ -44,7 +44,8 @@ const { t } = useI18n({
 <i18n locale="ja">
 {
   "inline": {
-    "title": "ホームページ"
+    "title": "ホームページ",
+    "description": "Shadcn Vue とファイルベースルーティングを搭載した、最高にモダンな環境です"
   }
 }
 </i18n>
@@ -52,7 +53,8 @@ const { t } = useI18n({
 <i18n locale="en">
 {
   "inline": {
-    "title": "Home Page"
+    "title": "Home Page",
+    "description": "That features Shadcn Vue and file-based routing, making it an incredibly modern environment."
   }
 }
 </i18n>
