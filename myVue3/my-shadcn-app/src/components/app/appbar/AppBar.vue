@@ -29,9 +29,11 @@
         <DarkModeToggle />
 
         <!-- 💡 修正：ホバー時の背景と文字色をセマンティックカラーに変更 -->
+        <!--
         <Button variant="ghost" size="icon" class="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent hover:text-accent-foreground rounded-lg">
           <Search class="h-4 w-4" />
         </Button>
+        -->
 
         <!-- 💡 修正：ホバー時の背景と文字色をセマンティックカラーに変更 -->
         <Button variant="ghost" size="icon" class="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent hover:text-accent-foreground rounded-lg">
