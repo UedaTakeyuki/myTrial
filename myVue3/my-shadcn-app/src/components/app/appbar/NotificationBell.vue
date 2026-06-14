@@ -1,27 +1,73 @@
+<!-- src/components/NotificationBell.vue -->
 <template>
-  <!-- 💡 親（元のヘッダー）の並び順に影響しないよう、単体のボタンとしてカプセル化 -->
-  <!-- クリックしたら通知メニューを開く（今回は確認用にアラート） -->
-  <button 
-    @click="openNotificationMenu" 
-    class="relative p-2 rounded-full hover:bg-muted transition-colors"
-  >
-    <!-- 鐘アイコン -->
-    <Bell class="w-5 h-5 text-muted-foreground" />
+  <DropdownMenu>
+    <!-- 1. トリガー（クリックを検知するボタン部分） -->
+    <DropdownMenuTrigger as-child>
+      <Button 
+        variant="ghost" 
+        class="relative p-2 h-9 w-9 rounded-full hover:bg-muted transition-colors"
+      >
+        <!-- 鐘アイコン -->
+        <Bell class="w-5 h-5 text-muted-foreground" />
 
-    <!-- 通知がある時だけチカチカバッジを表示 -->
-    <span v-if="notifications.length > 0" class="absolute top-1 right-1 flex h-2 w-2">
-      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
-      <span class="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
-    </span>
-  </button>
+        <!-- 未読通知が1件以上ある時だけバッジを表示 -->
+        <span v-if="notifications.length > 0" class="absolute top-1.5 right-1.5 flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
+        </span>
+      </Button>
+    </DropdownMenuTrigger>
+
+    <!-- 2. ポップアップメニューの中身（右端を揃えるため align="end" を指定） -->
+    <DropdownMenuContent class="w-64" align="end">
+      <DropdownMenuLabel class="font-semibold text-xs text-muted-foreground py-1.5 px-2">
+        通知一覧 ({{ notifications.length }}件)
+      </DropdownMenuLabel>
+      
+      <DropdownMenuSeparator />
+
+      <!-- A. 未読通知がある場合（最大5件を表示） -->
+      <template v-if="notifications.length > 0">
+        <DropdownMenuItem 
+          v-for="item in notifications.slice(0, 5)" 
+          :key="item.id"
+          class="flex flex-col items-start gap-0.5 cursor-pointer p-2.5 focus:bg-muted"
+          @click="handleNotificationClick(item)"
+        >
+          <div class="flex items-center gap-1 w-full">
+            <Bell class="w-3 h-3 text-destructive shrink-0 animate-pulse" />
+            <span class="text-xs font-semibold text-foreground truncate">{{ item.title }}</span>
+          </div>
+          <p class="text-[11px] text-muted-foreground leading-tight line-clamp-2 pl-4">
+            {{ item.text }}
+          </p>
+        </DropdownMenuItem>
+      </template>
+
+      <!-- B. 未読通知が1件もない場合 -->
+      <div v-else class="text-center py-6 text-xs text-muted-foreground">
+        新着の通知はありません
+      </div>
+    </DropdownMenuContent>
+  </DropdownMenu>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-import { Bell } from '@lucide/vue';
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { Bell } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import pb from '@/lib/pocketbase'
 
-// 🔔 未読通知の配列
+const router = useRouter()
 const notifications = ref([])
 const currentUser = pb.authStore.record
 
@@ -29,71 +75,52 @@ onMounted(async () => {
   if (!currentUser) return
 
   try {
-    // ⏳ 1. 起動時にまず「自分宛て（user_to）」かつ「未読（is_read = false）」の通知を全件取得
+    // ⏳ 1. 起動時に自分宛ての未読通知を全件取得
     notifications.value = await pb.collection('notifications').getFullList({
       filter: `user_to = '${currentUser.id}' && is_read = false`,
-      sort: '-created', // 新しい順
+      sort: '-created',
     })
   } catch (error) {
     console.error('通知データの初期取得に失敗しました:', error)
   }
 
   // 🔥 2. PocketBase のリアルタイム監視（Subscribe）を開始
-  // 全てのレコード変更（*）を監視し、イベント内で自分宛てかどうかを判別します
   pb.collection('notifications').subscribe('*', (e) => {
     const record = e.record
-
-    // 自分のための通知ではないデータは無視する
     if (record.user_to !== currentUser.id) return
 
     if (e.action === 'create' && !record.is_read) {
-      // 🆕 A. 新しい未読通知が作成されたら配列の先頭に追加
       notifications.value.unshift(record)
     } 
     else if (e.action === 'update' && record.is_read) {
-      // 👁️ B. 他の場所（ポップアップなど）で「既読」に更新されたら配列から削除
       notifications.value = notifications.value.filter(n => n.id !== record.id)
     } 
     else if (e.action === 'delete') {
-      // 🗑️ C. 通知レコード自体が削除されたら配列から削除
       notifications.value = notifications.value.filter(n => n.id !== record.id)
     }
   })
 })
 
-// 🔌 3. コンポーネントが破棄された（画面移動した）ときは購読を解除してメモリを解放
+// 🔌 3. 画面移動時の購読解除
 onUnmounted(() => {
   pb.collection('notifications').unsubscribe('*')
 })
 
-const openNotificationMenu = async() => {
-  if (notifications.value.length === 0) {
-    alert('新着の通知はありません。')
-    return
-  };
-
-  // 1. まずは画面に通知内容を表示する
-  alert(
-    `未読の通知が ${notifications.value.length} 件あります！\n\n` + 
-    notifications.value.map(n => `・${n.text}`).join('\n')
-  );
-
-  // 2. 🔥【追加】アラートを閉じたら、溜まっていた未読通知をすべて既読に更新する
+// 🔔 通知アイテムをクリックした時の個別処理
+const handleNotificationClick = async (item) => {
   try {
-    // 複数の未読通知を一気に並列で更新処理（Promise.all）
-    await Promise.all(
-      notifications.value.map(notification =>
-        pb.collection('notifications').update(notification.id, {
-          is_read: true
-        })
-      )
-    )
-    // 💡 解説: 
-    // PocketBase側でレコードが update されると、
-    // 上で書いている `.subscribe('*')` の update イベントが自動的に走り、
-    // `notifications.value` 配列からデータが消えて、チカチカが自動で止まります！
+    // 1. データベース上の該当レコードを既読（is_read = true）に更新
+    // これにより subscribe 経由で、自動的に通知配列（notifications）から削除されます
+    await pb.collection('notifications').update(item.id, {
+      is_read: true
+    })
+    
+    // 2. 通知に設定されている遷移先 URL (例: /messages) があれば遷移する
+    if (item.link_url) {
+      router.push(item.link_url)
+    }
   } catch (error) {
     console.error('通知の既読更新に失敗しました:', error)
-  } 
+  }
 }
 </script>
