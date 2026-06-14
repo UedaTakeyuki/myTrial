@@ -66,15 +66,34 @@ onUnmounted(() => {
   pb.collection('notifications').unsubscribe('*')
 })
 
-const openNotificationMenu = () => {
+const openNotificationMenu = async() => {
   if (notifications.value.length === 0) {
     alert('新着の通知はありません。')
     return
   };
 
+  // 1. まずは画面に通知内容を表示する
   alert(
     `未読の通知が ${notifications.value.length} 件あります！\n\n` + 
     notifications.value.map(n => `・${n.text}`).join('\n')
   );
+
+  // 2. 🔥【追加】アラートを閉じたら、溜まっていた未読通知をすべて既読に更新する
+  try {
+    // 複数の未読通知を一気に並列で更新処理（Promise.all）
+    await Promise.all(
+      notifications.value.map(notification =>
+        pb.collection('notifications').update(notification.id, {
+          is_read: true
+        })
+      )
+    )
+    // 💡 解説: 
+    // PocketBase側でレコードが update されると、
+    // 上で書いている `.subscribe('*')` の update イベントが自動的に走り、
+    // `notifications.value` 配列からデータが消えて、チカチカが自動で止まります！
+  } catch (error) {
+    console.error('通知の既読更新に失敗しました:', error)
+  } 
 }
 </script>
