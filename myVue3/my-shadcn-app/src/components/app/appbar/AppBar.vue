@@ -22,17 +22,11 @@
       <!-- 右側：アクションボタン群 -->
       <div class="flex items-center gap-2 sm:gap-3">
 
-        <!-- 4. 明暗反転（ダークモード）切り替えトグル -->
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          class="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent hover:text-accent-foreground rounded-lg"
-          @click="toggleDark()"
-        >
-          <Sun v-if="isDark" class="h-4 w-4" />
-          <Moon v-else class="h-4 w-4" />
-          <span class="sr-only">テーマ切り替え</span>
-        </Button>
+        <!-- 💡 切り出した言語切り替えコンポーネント -->
+        <LanguageSelector />
+
+        <!-- 💡 切り出したダークモードトグルコンポーネント -->
+        <DarkModeToggle />
 
         <!-- 💡 修正：ホバー時の背景と文字色をセマンティックカラーに変更 -->
         <Button variant="ghost" size="icon" class="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent hover:text-accent-foreground rounded-lg">
@@ -58,18 +52,12 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
-import { Search, Bell, Sun, Moon } from 'lucide-vue-next'
-import { useDark, useToggle } from '@vueuse/core'
+import { Search, Bell } from 'lucide-vue-next' 
 
 import MobileNav from '../../app/appbar/MobileNav.vue'
 import DesktopNav from '../../app/appbar/DesktopNav.vue'
 import UserMenu from './UserMenu.vue'
 
-const isDark = useDark({
-  selector: 'html',
-  attribute: 'class',
-  valueDark: 'dark',
-  valueLight: '',
-})
-const toggleDark = useToggle(isDark)
+import LanguageSelector from './LanguageSelector.vue'
+import DarkModeToggle from './DarkModeToggle.vue'
 </script>

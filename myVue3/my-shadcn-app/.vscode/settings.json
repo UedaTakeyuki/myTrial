@@ -1,0 +1,13 @@
+{
+  // 💡 1. ページ用とコンポーネント用、両方の探索ルートを配列で指定します
+  "i18n-ally.localesPaths": [
+    "src/locales/pages",
+    "src/locales/components"
+  ],
+
+  // 💡 2. 開いている Vue ファイルの場所に応じて、動的にフォルダとファイルをマッピングします
+  "i18n-ally.pathMatcher": "{path}/{locale}.json",
+
+  "i18n-ally.enabledFrameworks": ["vue"],
+  "i18n-ally.keystyle": "nested"
+}
