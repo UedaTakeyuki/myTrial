@@ -1,6 +1,9 @@
 <!-- src/components/DocsMain.vue -->
 <template>
   <main class="flex-1 min-w-0">
+    <!-- ★ 検索バーコンポーネントを配置 -->
+    <DocsSearch v-model="propsSearchQuery" />
+
     <!-- タグ選択ボタン -->
     <div class="flex flex-wrap gap-2 mb-8">
       <button 
@@ -42,7 +45,11 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue'
+import DocsSearch from './DocsSearch.vue' // ★ インポート
+
+// 1. 最低限、最初に props を変数として定義して受け取る必要があります
+const props = defineProps({
   posts: {
     type: Array,
     required: true
@@ -54,8 +61,21 @@ defineProps({
   selectedTag: {
     type: String,
     required: true
+  },
+  searchQuery: {
+    type: String,
+    required: true
   }
 })
 
-defineEmits(['update:selectedTag'])
+const emit = defineEmits([
+  'update:selectedTag',
+  'update:searchQuery' // ★ updateイベントを追加
+])
+
+// 2. props の定義が終わった「後」で、それを使って computed を作成します
+const propsSearchQuery = computed({
+  get: () => props.searchQuery, // これで props が未定義（ReferenceError）にならなくなります
+  set: (value) => emit('update:searchQuery', value)
+})
 </script>
