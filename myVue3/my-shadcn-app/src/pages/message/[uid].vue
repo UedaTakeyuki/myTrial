@@ -21,7 +21,8 @@ const {
   currentUserId, 
   fetchMessages, 
   subscribeMessages,
-  sendMessage
+  sendMessage,
+  markMessagesAsRead // 💡 追加インポート
 } = useMessages()
 
 const audio = new Audio(`${window.location.origin}/dragon-studio-new-notification-3-398649.mp3`)
@@ -54,8 +55,6 @@ onMounted(async () => {
   console.log("【[uid].vue 初期化】チャット相手のID:", targetId)
   console.log("【[uid].vue 初期化】自分のID:", currentUserId)
   
-
-
   try {
     // 💡 追加: 相手との承認関係が 'accepted' かをチェックする
     const isFriend = await pb.collection('friends').getFirstListItem(
@@ -93,6 +92,9 @@ onMounted(async () => {
         if (lastMessage.user_from !== currentUserId) {
           audio.currentTime = 0
           audio.play().catch(err => console.log("音声再生ブロック:", err))
+
+          // 🔥【追加】画面を開いている間に届いたメッセージ・通知を、即座に裏側でもう一度既読にする
+          await markMessagesAsRead(targetId)
         }
       }
       scrollToBottom()

@@ -16,6 +16,45 @@ export function useMessages() {
     }
   }
 
+  // 🔥【追加】溜まっている未読メッセージを既読（is_read = true）にする関数
+  const markMessagesAsRead = async (targetId) => {
+    if (!targetId) return
+    try {
+      // 相手から自分への未読メッセージをすべて取得
+      const unread = await pb.collection('messages').getFullList({
+        filter: `user_from = "${targetId}" && user_to.id ?= "${currentUserId}" && is_read = false`
+      })
+
+      // メッセージをすべて既読に更新
+      if (unread.length > 0) {
+        await Promise.all(
+          unread.map(msg => pb.collection('messages').update(msg.id, { is_read: true }))
+        )
+      }
+
+      // 💡【解決策1の連動】メッセージを読んだので、この相手からの新着通知レコードも既読にして鐘のチカチカを消す
+      // 2. 🔥【修正箇所】この相手からの新着通知レコードも既読にして鐘のチカチカを消す
+      // getFirstListItem の例外処理を try-catch で厳密に囲み、確実に安全を担保します
+      let unreadNotification = null
+      try {
+        unreadNotification = await pb.collection('notifications').getFirstListItem(
+        `user_to = '${currentUserId}' && user_from = '${targetId}' && type = 'new_message' && is_read = false`
+        )
+      }catch(e){
+        // レコードが見つからない場合は正常な動作としてnullのまま進める
+        unreadNotification = null
+      }
+
+      // 💡 修正ポイント: unreadNotification が「確実に存在し、かつ id を持っている場合」のみ更新をかける
+      if (unreadNotification && unreadNotification.id) {
+        await pb.collection('notifications').update(unreadNotification.id, { is_read: true })
+      }
+    } catch (error) {
+      // 💡 ここでエラーが起きても全体を落とさないよう警告にとどめる
+      console.warn("⚠️ 既読処理の途中でスキップされました（通知レコードが既に無いなど）:", error)
+    }
+  }
+  
   // メッセージ一括取得
   const fetchMessages = async (targetId) => {
     if (!targetId) return
@@ -38,6 +77,10 @@ export function useMessages() {
         loadSingleAvatarUrl(msg.expand?.user_from)
         loadSingleAvatarUrl(msg.expand?.user_to)
       }
+
+      // 🔥【追加】メッセージを読み込んだら、既読処理を実行
+      await markMessagesAsRead(targetId)
+
       console.log("【APIクエリ成功】取得件数:", records.value.length)
     } catch (error) {
       console.error("【APIクエリ失敗】詳細:", error)
@@ -76,6 +119,19 @@ export function useMessages() {
             records.value.push(freshRecord)
           }
 
+          // 🔥【追加】自分が今このチャット画面を開いている状態で「相手から」メッセージが届いたなら、即座にメッセージと通知を既読にする
+          if (freshRecord.user_from === targetId) {
+            await pb.collection('messages').update(freshRecord.id, { is_read: true })
+            
+            // 鐘の通知も既読にしてチカチカさせない
+            const unreadNotification = await pb.collection('notifications').getFirstListItem(
+              `user_to = '${currentUserId}' && user_from = '${targetId}' && type = 'new_message' && is_read = false`
+            ).catch(() => null)
+            if (unreadNotification) {
+              await pb.collection('notifications').update(unreadNotification.id, { is_read: true })
+            }
+          }
+          
           if (onNewMessageReceived) onNewMessageReceived()
         } catch (error) {
           console.error("【リアルタイム同期エラー】:", error)
@@ -113,6 +169,32 @@ export function useMessages() {
       }
       
       const result = await pb.collection('messages').create(formData)
+
+      // 🔥【解決策1の実装】相手への通知の追加・更新処理
+      // 💡 相手がこの画面を開いているかは関係なく、「未読通知」を送信側のトリガーとして制御します
+      const existingNotification = await pb.collection('notifications').getFirstListItem(
+        `user_to = '${targetId}' && user_from = '${currentUserId}' && type = 'new_message' && is_read = false`
+      ).catch(() => null)
+
+      if (existingNotification) {
+        // すでに未読通知があるなら内容だけ更新（レコードは増えない！）
+        await pb.collection('notifications').update(existingNotification.id, {
+          title: '新着メッセージがあります',
+          text: '新しいメッセージが届いています。',
+        }).catch(() => null)
+      } else {
+        // まだ未読通知がない最初の一歩だけレコードを作る
+        await pb.collection('notifications').create({
+          user_to: targetId,
+          user_from: currentUserId,
+          type: 'new_message',
+          title: '新着メッセージ',
+          text: `新着メッセージが届きました。`,
+          is_read: false,
+          link_url: `/message/${currentUserId}` // 通知クリックで自分とのチャットへ
+        }).catch(() => null)
+      }
+
       console.log("【送信成功】PocketBase保存完了:", result)
       return true
     } catch (error) {
@@ -138,6 +220,7 @@ export function useMessages() {
     currentUserId,
     fetchMessages,
     subscribeMessages,
-    sendMessage
+    sendMessage,
+    markMessagesAsRead // 外部からも叩けるようにエクスポート
   }
 }
