@@ -80,83 +80,51 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import pb from '@/lib/pocketbase'
+import { useNotifications } from '@/composables/message/useNotifications'
 
 const router = useRouter()
 const route = useRoute() // 💡 現在表示中のURL情報を取得
 
-const notifications = ref([])
-const currentUser = pb.authStore.record
+// 💡 通知用の Composable を初期化
+const { 
+  notifications, 
+  fetchUnreadNotifications, 
+  subscribeNotifications, 
+  unsubscribeNotifications 
+} = useNotifications()
 
 // 🔥【追加】今まさに開いているチャット相手のID（URLが /message/相手のID の時だけ取得できる）
 const activeChatPartnerId = computed(() => {
   // ルートのパスが /message/[uid] の構造になっているかチェック
-  if (route.path.startsWith('/message/')) {
+  if (route.path && route.path.startsWith('/message/')) {
     return route.params.uid || ''
   }
   return ''
 })
 
 onMounted(async () => {
-  if (!currentUser) return
+  // 1. 初期データの取得
+  await fetchUnreadNotifications()
 
-  try {
-    notifications.value = await pb.collection('notifications').getFullList({
-      filter: `user_to = '${currentUser.id}' && is_read = false`,
-      sort: '-created',
-    })
-  } catch (error) {
-    console.error('通知データの初期取得に失敗しました:', error)
-  }
-
-  pb.collection('notifications').subscribe('*', (e) => {
-    const record = e.record
-    if (record.user_to !== currentUser.id) return
-
-    if (e.action === 'create' && !record.is_read) {
-      // 🔥【ここを修正】
-      // もし届いた通知が「新着メッセージ（new_message）」で、かつ「いま画面を開いている相手（user_from）」からなら、
-      // 鐘をチカチカさせない（配列に追加しない）で完全に無視する！
-      if (record.type === 'new_message' && record.user_from === activeChatPartnerId.value) {
-        return 
-      }
-
-      notifications.value.unshift(record)
-    }
-    else if (e.action === 'update' && record.is_read) {
-      notifications.value = notifications.value.filter(n => n.id !== record.id)
-    } 
-    else if (e.action === 'delete') {
-      notifications.value = notifications.value.filter(n => n.id !== record.id)
-    }
+  // 2. リアルタイム監視を開始（ガード条件の関数を引数として渡す）
+  await subscribeNotifications((record) => {
+    // 今チャットを開いている相手からの新着メッセージ通知なら無視する（trueを返す）
+    return record.type === 'new_message' && record.user_from === activeChatPartnerId.value
   })
 })
 
 onUnmounted(() => {
-  pb.collection('notifications').unsubscribe('*')
+  unsubscribeNotifications()
 })
 
 // 🔔 通知アイテムをクリックした時の処理
 const handleNotificationClick = async (item) => {
   try {
-    // 1. データベース上の該当レコードを既読に更新
-    await pb.collection('notifications').update(item.id, {
-      is_read: true
-    })
-    
-    // 2. 🔥 type が friend_request または new_message の時はチャット画面へ遷移
+    // 💡 鐘をクリックした時も、PocketBaseを直接叩くのではなく汎用的にアップデート可能
+    await pb.collection('notifications').update(item.id, { is_read: true })
     if (item.type === 'friend_request' || item.type === 'new_message') {
-      // 送信元のIDを取得（PocketBaseの登録状況に合わせて item.user_from を指定）
-      const partnerId = item.user_from
-      
-      if (partnerId) {
-        router.push(`/message/${partnerId}`)
-      } else {
-        // 万が一IDが取れなかった場合のフォールバック（共通メッセージページなど）
-        router.push('/message')
-      }
-    } 
-    // 3. それ以外の汎用通知は設定された link_url に従う
-    else if (item.link_url) {
+      if (item.user_from) router.push(`/message/${item.user_from}`)
+    } else if (item.link_url) {
       router.push(item.link_url)
     }
   } catch (error) {

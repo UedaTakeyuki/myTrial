@@ -1,12 +1,14 @@
 import { ref, onUnmounted } from 'vue'
 import pb from '@/lib/pocketbase'
 import md5 from '@/lib/md5'
+import { useNotifications } from '@/composables/message/useNotifications' // 💡 追加
 
 export function useMessages() {
   const records = ref([])
   const avatarUrls = ref({})
   const isSending = ref(false)
   const currentUserId = pb.authStore.record?.id || ''
+  const { markChatNotificationsAsRead, sendNewMessageNotification } = useNotifications() // 💡 追加
 
   // アバターURLの読み込み
   const loadSingleAvatarUrl = (user) => {
@@ -32,23 +34,9 @@ export function useMessages() {
         )
       }
 
-      // 💡【解決策1の連動】メッセージを読んだので、この相手からの新着通知レコードも既読にして鐘のチカチカを消す
-      // 2. 🔥【修正箇所】この相手からの新着通知レコードも既読にして鐘のチカチカを消す
-      // getFirstListItem の例外処理を try-catch で厳密に囲み、確実に安全を担保します
-      let unreadNotification = null
-      try {
-        unreadNotification = await pb.collection('notifications').getFirstListItem(
-        `user_to = '${currentUserId}' && user_from = '${targetId}' && type = 'new_message' && is_read = false`
-        )
-      }catch(e){
-        // レコードが見つからない場合は正常な動作としてnullのまま進める
-        unreadNotification = null
-      }
+      // 🔥 修正：通知の既読化ロジックをごっそり削り、新しいComposableの関数を1行呼ぶだけ！
+      await markChatNotificationsAsRead(targetId)
 
-      // 💡 修正ポイント: unreadNotification が「確実に存在し、かつ id を持っている場合」のみ更新をかける
-      if (unreadNotification && unreadNotification.id) {
-        await pb.collection('notifications').update(unreadNotification.id, { is_read: true })
-      }
     } catch (error) {
       // 💡 ここでエラーが起きても全体を落とさないよう警告にとどめる
       console.warn("⚠️ 既読処理の途中でスキップされました（通知レコードが既に無いなど）:", error)
@@ -170,31 +158,9 @@ export function useMessages() {
       
       const result = await pb.collection('messages').create(formData)
 
-      // 🔥【解決策1の実装】相手への通知の追加・更新処理
-      // 💡 相手がこの画面を開いているかは関係なく、「未読通知」を送信側のトリガーとして制御します
-      const existingNotification = await pb.collection('notifications').getFirstListItem(
-        `user_to = '${targetId}' && user_from = '${currentUserId}' && type = 'new_message' && is_read = false`
-      ).catch(() => null)
-
-      if (existingNotification) {
-        // すでに未読通知があるなら内容だけ更新（レコードは増えない！）
-        await pb.collection('notifications').update(existingNotification.id, {
-          title: '新着メッセージがあります',
-          text: '新しいメッセージが届いています。',
-        }).catch(() => null)
-      } else {
-        // まだ未読通知がない最初の一歩だけレコードを作る
-        await pb.collection('notifications').create({
-          user_to: targetId,
-          user_from: currentUserId,
-          type: 'new_message',
-          title: '新着メッセージ',
-          text: `新着メッセージが届きました。`,
-          is_read: false,
-          link_url: `/message/${currentUserId}` // 通知クリックで自分とのチャットへ
-        }).catch(() => null)
-      }
-
+      // 🔥 修正：送信時の通知レコード作成・更新の長文コードも削り、1行呼ぶだけ！
+      await sendNewMessageNotification(targetId)
+      
       console.log("【送信成功】PocketBase保存完了:", result)
       return true
     } catch (error) {
