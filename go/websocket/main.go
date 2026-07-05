@@ -15,7 +15,7 @@ func main() {
 	signal.Notify(interrupt, os.Interrupt)
 
 	// WebSocketサーバーのURL
-	url := "wss://durable-object-starter.gde00107.workers.dev"
+	url := "wss://connect-cf.gde00107.workers.dev"
 	log.Printf("接続中: %s", url)
 
 	// サーバーへ接続
