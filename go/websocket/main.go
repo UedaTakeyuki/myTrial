@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 	"errors"
+	"math"
 
 	"github.com/coder/websocket"
 )
@@ -60,14 +61,105 @@ func main() {
 	// cancelAll() を呼ぶようにしておくと、安全に終了できます。
 
 	// 接続処理...
+	/*
 	c, _, err := websocket.Dial(mainCtx, "wss://connect-cf.gde00107.workers.dev", nil)
 	if err != nil {
 		log.Fatalf("接続失敗: %v", err)
 	}
+	*/
 
+	// 指数バックオフ用の基本設定
+	baseDelay := 2 * time.Second    // 最初の待ち時間
+	maxDelay := 10 * time.Minute    // 最大でも10分までしか伸ばさない（それ以上は10分固定）
+	attempt := 0                    // 連続失敗回数
 
 	// 2. 指令を何ヶ月も待ち続ける無限ループ
 	for {
+		// mainCtx がすでにキャンセルされていないか事前にチェック
+		if mainCtx.Err() != nil {
+			break
+		}
+
+		fmt.Println("Cloudflare DO に接続を試みます...")
+		serverURL := "wss://connect-cf.gde00107.workers.dev"
+
+		c, _, err := websocket.Dial(mainCtx, serverURL, nil)
+		log.Println("c",c)
+		if err != nil {
+			log.Printf("接続失敗: %v", err)
+			
+			// 接続失敗（②のケース）なので、待ち時間を計算してスリープ
+			attempt++
+			delay := calculateDelay(baseDelay, maxDelay, attempt)
+			
+			fmt.Printf("接続に失敗しました。%v 後に再試行します (失敗回数: %d)\n", delay, attempt)
+			
+			// ★超重要: 単なる time.Sleep ではなく、スリープ中にアプリが終了したら即座に抜ける
+			select {
+			case <-time.After(delay):
+				// 指定時間待てたので、次のループ（再接続）へ
+				continue
+			case <-mainCtx.Done():
+				// 待っている最中に cancelAll() が呼ばれたのでループを抜ける
+				fmt.Println("待機中にアプリ終了シグナルを受信しました。")
+				break
+			}
+		}
+
+		// --- ここに到達したということは、無事に接続成功！ ---
+		fmt.Println("★接続成功しました！")
+		attempt = 0 // 成功したので、失敗カウンターをリセット
+
+		// メッセージ待ち受け無限ループ
+		for {
+			c, _, err := websocket.Dial(mainCtx, serverURL, nil)
+			if err != nil {
+				log.Printf("接続失敗: %v", err)
+				
+				// 接続失敗（②のケース）なので、待ち時間を計算してスリープ
+				attempt++
+				delay := calculateDelay(baseDelay, maxDelay, attempt)
+				
+				fmt.Printf("接続に失敗しました。%v 後に再試行します (失敗回数: %d)\n", delay, attempt)
+				
+				// ★超重要: 単なる time.Sleep ではなく、スリープ中にアプリが終了したら即座に抜ける
+				select {
+				case <-time.After(delay):
+					// 指定時間待てたので、次のループ（再接続）へ
+					continue
+				case <-mainCtx.Done():
+					// 待っている最中に cancelAll() が呼ばれたのでループを抜ける
+					fmt.Println("待機中にアプリ終了シグナルを受信しました。")
+					break
+				}
+			}
+
+			// --- ここに到達したということは、無事に接続成功！ ---
+			fmt.Println("★接続成功しました！")
+			attempt = 0 // 成功したので、失敗カウンターをリセット
+
+			// メッセージ待ち受け無限ループ
+			for {
+				msgType, p, err := c.Read(mainCtx)
+				if err != nil {
+					// ① 自発的なキャンセル（アプリ終了）の場合
+					if errors.Is(err, context.Canceled) {
+						fmt.Println("【① アプリ終了】正常に終了します。")
+						c.Close(websocket.StatusNormalClosure, "leaving")
+						return
+					}
+
+					// ② 回線切れ、keep-alive失敗、DOからの切断
+					log.Printf("【② 通信切断検出】: %v", err)
+					c.Close(websocket.StatusAbnormalClosure, "abnormal")
+					break // 内側のReadループを抜けて、外側の再接続ループへ戻る
+				}
+
+				// シグナリングが届いた時の処理（Pionへ流すなど）
+				go handleSignaling(msgType, p)
+			}
+		}
+/*
 		// Read には「全体の寿命」である mainCtx をそのまま渡す。
 		// これにより、何ヶ月もデータが来なくても、接続が生きている限りここでじっと待ち続けます。
 		msgType, p, err := c.Read(mainCtx)
@@ -98,5 +190,32 @@ func main() {
 
 		// 指令（WebRTCのオファー）が届いたので Pion に流す
 		// go handleSignaling(p)
+*/
+
 	}
+}
+
+// 指数バックオフの時間を計算する補助関数
+func calculateDelay(base, max time.Duration, attempt int) time.Duration {
+	// 2 ^ attempt を計算（オーバーフロー対策で、ある程度で頭打ちにする）
+	if attempt > 30 {
+		return max
+	}
+	
+	// 指数関数的に増加: base * (2 ^ (attempt - 1))
+	// 1回目: 2s * 1 = 2s
+	// 2回目: 2s * 2 = 4s
+	// 3回目: 2s * 4 = 8s...
+	factor := math.Pow(2, float64(attempt-1))
+	delay := time.Duration(float64(base) * factor)
+
+	// 最大値（例: 10分）を超えないように制限
+	if delay > max || delay < 0 { // delay < 0 はオーバーフロー対策
+		return max
+	}
+	return delay
+}
+
+func handleSignaling(msgType websocket.MessageType, payload []byte) {
+	// Pion へのシグナリング中継ロジックをここに書く
 }
