@@ -7,6 +7,7 @@ import (
 	"time"
 	"errors"
 	"math"
+	"math/rand" // Go 1.20以降はシード不要で安全にランダムが使えます
 
 	"github.com/coder/websocket"
 )
@@ -202,16 +203,30 @@ func calculateDelay(base, max time.Duration, attempt int) time.Duration {
 		return max
 	}
 	
-	// 指数関数的に増加: base * (2 ^ (attempt - 1))
-	// 1回目: 2s * 1 = 2s
-	// 2回目: 2s * 2 = 4s
-	// 3回目: 2s * 4 = 8s...
+	// 1. 純粋な指数バックオフの計算 (base * 2^(attempt-1))
 	factor := math.Pow(2, float64(attempt-1))
 	delay := time.Duration(float64(base) * factor)
 
-	// 最大値（例: 10分）を超えないように制限
-	if delay > max || delay < 0 { // delay < 0 はオーバーフロー対策
+	if delay > max || delay < 0 {
+		delay = max
+	}
+
+	// 2. ジッター（ゆらぎ）の追加
+	// 計算された待ち時間の「±10%」の範囲でランダムに時間をずらす（Full Jitterの応用）
+	// 例: 100秒待ちなら、90秒〜110秒の間に綺麗に分散させる
+	jitterRange := int64(delay / 10) // 10%の幅を計算
+	if jitterRange > 0 {
+		// -10% 〜 +10% の間でランダムな時間を生成
+		randomJitter := time.Duration(rand.Int63n(jitterRange*2) - jitterRange)
+		delay = delay + randomJitter
+	}
+
+	// ゆらぎを足した結果、最大・最小を超えないように最終ガード
+	if delay > max {
 		return max
+	}
+	if delay < base {
+		return base
 	}
 	return delay
 }
