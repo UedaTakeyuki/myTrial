@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"errors"
 
 	"github.com/coder/websocket"
 )
@@ -74,11 +75,25 @@ func main() {
 		log.Println("p", p)
 
 		if err != nil {
-			// ここに落ちるのは以下の2パターンのみ：
-			// ① mainCtx がキャンセルされた（アプリの終了）
-			// ② 物理的に回線が切れた、または DO 側から切断された
-			log.Printf("接続が終了しました: %v", err)
-			break 
+			// 判定①：自分自身（アプリ側）で cancelAll() を呼んで終了した場合
+			if errors.Is(err, context.Canceled) {
+				fmt.Println("【① アプリ終了】自発的なキャンセルにより、正常に待機を終了しました。")
+				return
+			}
+
+			// 判定②：それ以外（回線切れ、DOからの切断、keep-alive失敗など）
+			
+			// さらに詳しく「WebSocketレベルのクローズ」かどうかを調べる場合
+			var ce websocket.CloseError
+			if errors.As(err, &ce) {
+				fmt.Printf("【② WebSocket切断】コード %v (理由: %s) で切断されました。\n", ce.Code, ce.Reason)
+			} else {
+				// Ping/Pong（keep-alive）の失敗、ネットワークの瞬断、LAN抜けなどはここに落ちます
+				fmt.Printf("【② ネットワーク異常】物理的な切断またはkeep-alive失敗: %v\n", err)
+			}
+			
+			// ここで「再接続ロジック（リトライ）」へ進む
+			return		
 		}
 
 		// 指令（WebRTCのオファー）が届いたので Pion に流す
