@@ -54,27 +54,18 @@ func main() {
 	// 本番のロングライフ接続
 	//
 
-	// 1. アプリ全体が終了するときだけキャンセルされる ctx（タイムアウトなし）
+	// アプリ全体の終了シグナル用（タイムアウトなし）
 	mainCtx, cancelAll := context.WithCancel(context.Background())
 	defer cancelAll()
 
-	// ※ ここで SIGINT (Ctrl+C) などのシステム終了イベントを受け取ったら 
-	// cancelAll() を呼ぶようにしておくと、安全に終了できます。
-
-	// 接続処理...
-	/*
-	c, _, err := websocket.Dial(mainCtx, "wss://connect-cf.gde00107.workers.dev", nil)
-	if err != nil {
-		log.Fatalf("接続失敗: %v", err)
-	}
-	*/
+	// 例: Ctrl+C などの終了イベントを待つゴルーチンをここで走らせて、
+	// 終了時に cancelAll() を呼ぶようにします。
 
 	// 指数バックオフ用の基本設定
 	baseDelay := 2 * time.Second    // 最初の待ち時間
 	maxDelay := 10 * time.Minute    // 最大でも10分までしか伸ばさない（それ以上は10分固定）
 	attempt := 0                    // 連続失敗回数
 
-	// 2. 指令を何ヶ月も待ち続ける無限ループ
 	for {
 		// mainCtx がすでにキャンセルされていないか事前にチェック
 		if mainCtx.Err() != nil {
@@ -83,9 +74,8 @@ func main() {
 
 		fmt.Println("Cloudflare DO に接続を試みます...")
 		serverURL := "wss://connect-cf.gde00107.workers.dev"
-
+		
 		c, _, err := websocket.Dial(mainCtx, serverURL, nil)
-		log.Println("c",c)
 		if err != nil {
 			log.Printf("接続失敗: %v", err)
 			
@@ -113,86 +103,24 @@ func main() {
 
 		// メッセージ待ち受け無限ループ
 		for {
-			c, _, err := websocket.Dial(mainCtx, serverURL, nil)
+			msgType, p, err := c.Read(mainCtx)
 			if err != nil {
-				log.Printf("接続失敗: %v", err)
-				
-				// 接続失敗（②のケース）なので、待ち時間を計算してスリープ
-				attempt++
-				delay := calculateDelay(baseDelay, maxDelay, attempt)
-				
-				fmt.Printf("接続に失敗しました。%v 後に再試行します (失敗回数: %d)\n", delay, attempt)
-				
-				// ★超重要: 単なる time.Sleep ではなく、スリープ中にアプリが終了したら即座に抜ける
-				select {
-				case <-time.After(delay):
-					// 指定時間待てたので、次のループ（再接続）へ
-					continue
-				case <-mainCtx.Done():
-					// 待っている最中に cancelAll() が呼ばれたのでループを抜ける
-					fmt.Println("待機中にアプリ終了シグナルを受信しました。")
-					break
-				}
-			}
-
-			// --- ここに到達したということは、無事に接続成功！ ---
-			fmt.Println("★接続成功しました！")
-			attempt = 0 // 成功したので、失敗カウンターをリセット
-
-			// メッセージ待ち受け無限ループ
-			for {
-				msgType, p, err := c.Read(mainCtx)
-				if err != nil {
-					// ① 自発的なキャンセル（アプリ終了）の場合
-					if errors.Is(err, context.Canceled) {
-						fmt.Println("【① アプリ終了】正常に終了します。")
-						c.Close(websocket.StatusNormalClosure, "leaving")
-						return
-					}
-
-					// ② 回線切れ、keep-alive失敗、DOからの切断
-					log.Printf("【② 通信切断検出】: %v", err)
-					c.Close(websocket.StatusAbnormalClosure, "abnormal")
-					break // 内側のReadループを抜けて、外側の再接続ループへ戻る
+				// ① 自発的なキャンセル（アプリ終了）の場合
+				if errors.Is(err, context.Canceled) {
+					fmt.Println("【① アプリ終了】正常に終了します。")
+					c.Close(websocket.StatusNormalClosure, "leaving")
+					return
 				}
 
-				// シグナリングが届いた時の処理（Pionへ流すなど）
-				go handleSignaling(msgType, p)
+				// ② 回線切れ、keep-alive失敗、DOからの切断
+				log.Printf("【② 通信切断検出】: %v", err)
+				c.Close(websocket.StatusAbnormalClosure, "abnormal")
+				break // 内側のReadループを抜けて、外側の再接続ループへ戻る
 			}
+
+			// シグナリングが届いた時の処理（Pionへ流すなど）
+			go handleSignaling(msgType, p)
 		}
-/*
-		// Read には「全体の寿命」である mainCtx をそのまま渡す。
-		// これにより、何ヶ月もデータが来なくても、接続が生きている限りここでじっと待ち続けます。
-		msgType, p, err := c.Read(mainCtx)
-		log.Println("msgType", msgType)
-		log.Println("p", p)
-
-		if err != nil {
-			// 判定①：自分自身（アプリ側）で cancelAll() を呼んで終了した場合
-			if errors.Is(err, context.Canceled) {
-				fmt.Println("【① アプリ終了】自発的なキャンセルにより、正常に待機を終了しました。")
-				return
-			}
-
-			// 判定②：それ以外（回線切れ、DOからの切断、keep-alive失敗など）
-			
-			// さらに詳しく「WebSocketレベルのクローズ」かどうかを調べる場合
-			var ce websocket.CloseError
-			if errors.As(err, &ce) {
-				fmt.Printf("【② WebSocket切断】コード %v (理由: %s) で切断されました。\n", ce.Code, ce.Reason)
-			} else {
-				// Ping/Pong（keep-alive）の失敗、ネットワークの瞬断、LAN抜けなどはここに落ちます
-				fmt.Printf("【② ネットワーク異常】物理的な切断またはkeep-alive失敗: %v\n", err)
-			}
-			
-			// ここで「再接続ロジック（リトライ）」へ進む
-			return		
-		}
-
-		// 指令（WebRTCのオファー）が届いたので Pion に流す
-		// go handleSignaling(p)
-*/
-
 	}
 }
 
