@@ -1,75 +1,46 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
-	"os"
-	"os/signal"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"github.com/coder/websocket"
 )
 
 func main() {
-	// 割り込みシグナル（Ctrl+C）を検知するためのチャンネル
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt)
+	// 1. 全体の処理のタイムアウトを30秒に設定（RPiの通信遅延対策）
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
+	defer cancel()
 
-	// WebSocketサーバーのURL
-	url := "wss://connect-cf.gde00107.workers.dev"
-	log.Printf("接続中: %s", url)
-
-	// サーバーへ接続
-	c, _, err := websocket.DefaultDialer.Dial(url, nil)
+	// 2. サーバーへ接続（Gorillaの Dial に相当）
+	serverURL := "wss://connect-cf.gde00107.workers.dev"
+	c, _, err := websocket.Dial(ctx, serverURL, nil)
 	if err != nil {
-		log.Fatal("ダイアルエラー:", err)
+		log.Fatalf("接続失敗: %v", err)
 	}
-	defer c.Close()
+	// 関数を抜けるときに安全にクローズする（Gorillaと違い原因コードと理由を添えられる）
+	defer c.Close(websocket.StatusNormalClosure, "bye")
 
-	// サーバーからのメッセージを読み取るゴルーチン
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		for {
-			_, message, err := c.ReadMessage()
-			if err != nil {
-				log.Println("読み取りエラー:", err)
-				return
-			}
-			log.Printf("受信: %s", message)
-		}
-	}()
+	fmt.Println("サーバーに接続しました。")
 
-	// サーバーへメッセージを送信する処理
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-done:
-			return
-		case t := <-ticker.C:
-			msg := "こんにちは！ 現在時刻: " + t.String()
-			err := c.WriteMessage(websocket.TextMessage, []byte(msg))
-			if err != nil {
-				log.Println("書き込みエラー:", err)
-				return
-			}
-		case <-interrupt:
-			log.Println("割り込みを検知しました。切断します...")
-
-			// 接続を閉じるために close メッセージを送信
-			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-			if err != nil {
-				log.Println("クローズメッセージ書き込みエラー:", err)
-				return
-			}
-			
-			// サーバーからのclose応答を待つか、タイムアウトを設定
-			select {
-			case <-done:
-			case <-time.After(time.Second):
-			}
-			return
-		}
+	// 3. メッセージの送信
+	// Gorillaの c.WriteMessage(websocket.TextMessage, ...) に相当
+	message := "Hello from RPi!"
+	err = c.Write(ctx, websocket.MessageText, []byte(message))
+	if err != nil {
+		log.Fatalf("送信失敗: %v", err)
 	}
+	fmt.Printf("送信成功: %s\n", message)
+
+	// 4. 返信の受信
+	// Gorillaの c.ReadMessage() に相当（戻り値でメッセージタイプ、中身、エラーが取れる）
+	msgType, p, err := c.Read(ctx)
+	if err != nil {
+		log.Fatalf("受信失敗: %v", err)
+	}
+
+	// 受信データを出力
+	fmt.Printf("受信成功 (タイプ: %v): %s\n", msgType, string(p))
 }
