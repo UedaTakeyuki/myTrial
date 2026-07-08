@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
-	"time"
-	"errors"
 	"math"
 	"math/rand" // Go 1.20以降はシード不要で安全にランダムが使えます
+	"time"
 
 	"github.com/coder/websocket"
 )
@@ -49,7 +49,6 @@ func main() {
 		// 受信データを出力
 		fmt.Printf("受信成功 (タイプ: %v): %s\n", msgType, string(p))
 	}
-
 	//
 	// 本番のロングライフ接続
 	//
@@ -62,9 +61,9 @@ func main() {
 	// 終了時に cancelAll() を呼ぶようにします。
 
 	// 指数バックオフ用の基本設定
-	baseDelay := 2 * time.Second    // 最初の待ち時間
-	maxDelay := 10 * time.Minute    // 最大でも10分までしか伸ばさない（それ以上は10分固定）
-	attempt := 0                    // 連続失敗回数
+	baseDelay := 2 * time.Second // 最初の待ち時間
+	maxDelay := 10 * time.Minute // 最大でも10分までしか伸ばさない（それ以上は10分固定）
+	attempt := 0                 // 連続失敗回数
 
 	for {
 		// mainCtx がすでにキャンセルされていないか事前にチェック
@@ -74,17 +73,17 @@ func main() {
 
 		fmt.Println("Cloudflare DO に接続を試みます...")
 		serverURL := "wss://connect-cf.gde00107.workers.dev"
-		
+
 		c, _, err := websocket.Dial(mainCtx, serverURL, nil)
 		if err != nil {
 			log.Printf("接続失敗: %v", err)
-			
+
 			// 接続失敗（②のケース）なので、待ち時間を計算してスリープ
 			attempt++
 			delay := calculateDelay(baseDelay, maxDelay, attempt)
-			
+
 			fmt.Printf("接続に失敗しました。%v 後に再試行します (失敗回数: %d)\n", delay, attempt)
-			
+
 			// ★超重要: 単なる time.Sleep ではなく、スリープ中にアプリが終了したら即座に抜ける
 			select {
 			case <-time.After(delay):
@@ -103,6 +102,8 @@ func main() {
 
 		// メッセージ待ち受け無限ループ
 		for {
+			log.Println("[Goデバッグ] c.Read() でサーバーからのメッセージを待機中...")
+
 			msgType, p, err := c.Read(mainCtx)
 			if err != nil {
 				// ① 自発的なキャンセル（アプリ終了）の場合
@@ -118,6 +119,8 @@ func main() {
 				break // 内側のReadループを抜けて、外側の再接続ループへ戻る
 			}
 
+			log.Printf("[Goデバッグ] c.Read() を突破！ 受信データ: %s", string(p))
+
 			// シグナリングが届いた時の処理（Pionへ流すなど）
 			go handleSignaling(msgType, p)
 		}
@@ -130,7 +133,7 @@ func calculateDelay(base, max time.Duration, attempt int) time.Duration {
 	if attempt > 30 {
 		return max
 	}
-	
+
 	// 1. 純粋な指数バックオフの計算 (base * 2^(attempt-1))
 	factor := math.Pow(2, float64(attempt-1))
 	delay := time.Duration(float64(base) * factor)
@@ -161,4 +164,5 @@ func calculateDelay(base, max time.Duration, attempt int) time.Duration {
 
 func handleSignaling(msgType websocket.MessageType, payload []byte) {
 	// Pion へのシグナリング中継ロジックをここに書く
+	log.Println(string(payload))
 }
