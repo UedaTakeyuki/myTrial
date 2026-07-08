@@ -4,6 +4,10 @@
     "typescript": "*"
   },
   "scripts": {
+<<<<<<< HEAD
     "build": "tsc src/welcome.ts"
+=======
+    "build": "tsc"
+>>>>>>> f4e068d3d1f43289313ea33f743e427b3ecf35b4
   }
 }
