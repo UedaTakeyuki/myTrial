@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+/*
 	// 最初の接続テスト（タイムアウトつき）
 	{
 		// 1. 全体の処理のタイムアウトを30秒に設定（RPiの通信遅延対策）
@@ -20,7 +21,7 @@ func main() {
 		defer cancel()
 
 		// 2. サーバーへ接続（Gorillaの Dial に相当）
-		serverURL := "wss://connect-cf.gde00107.workers.dev"
+		serverURL := "wss://connect-cf.gde00107.workers.dev/device"
 		c, _, err := websocket.Dial(ctx, serverURL, nil)
 		if err != nil {
 			log.Fatalf("接続失敗: %v", err)
@@ -49,6 +50,7 @@ func main() {
 		// 受信データを出力
 		fmt.Printf("受信成功 (タイプ: %v): %s\n", msgType, string(p))
 	}
+*/
 	//
 	// 本番のロングライフ接続
 	//
@@ -72,7 +74,7 @@ func main() {
 		}
 
 		fmt.Println("Cloudflare DO に接続を試みます...")
-		serverURL := "wss://connect-cf.gde00107.workers.dev"
+		serverURL := "wss://connect-cf.gde00107.workers.dev/device"
 
 		c, _, err := websocket.Dial(mainCtx, serverURL, nil)
 		if err != nil {
